@@ -1,6 +1,7 @@
-using UnityEngine;
-using UnityEngine.UI;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class ButtonManager : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class ButtonManager : MonoBehaviour
 	public Button setting;
 	public Button quit;
 	public Button back;
+	public Button start;
 
 	private ButtonHover playHover;
 	private ButtonHover settingHover;
@@ -83,6 +85,7 @@ public class ButtonManager : MonoBehaviour
 		setting.gameObject.SetActive(false);
 		quit.gameObject.SetActive(false);
 		back.gameObject.SetActive(true);
+		start.gameObject.SetActive(true);
 	}
 
 	public void Back()
@@ -92,10 +95,15 @@ public class ButtonManager : MonoBehaviour
 		setting.gameObject.SetActive(true);
 		quit.gameObject.SetActive(true);
 		back.gameObject.SetActive(false);
+		start.gameObject.SetActive(false);
 
 		playHover.ResetButton();
 		settingHover.ResetButton();
 		quitHover.ResetButton();
+	}
+	public void StartGame() 
+	{
+		SceneManager.LoadScene("MainMap");
 	}
 
 	public void Quit()
