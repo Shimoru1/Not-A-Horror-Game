@@ -134,7 +134,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 552871897204902282, guid: e472b9a4d9c164e4b82f639f00e457fe, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 16.9
       objectReference: {fileID: 0}
     - target: {fileID: 552871897204902282, guid: e472b9a4d9c164e4b82f639f00e457fe, type: 3}
       propertyPath: m_LocalPosition.y
@@ -142,7 +142,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 552871897204902282, guid: e472b9a4d9c164e4b82f639f00e457fe, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 12.66
       objectReference: {fileID: 0}
     - target: {fileID: 552871897204902282, guid: e472b9a4d9c164e4b82f639f00e457fe, type: 3}
       propertyPath: m_LocalRotation.w
@@ -170,6 +170,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 552871897204902282, guid: e472b9a4d9c164e4b82f639f00e457fe, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3829995466170962466, guid: e472b9a4d9c164e4b82f639f00e457fe, type: 3}
+      propertyPath: whatIsGround.m_Bits
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6353997736127287289, guid: e472b9a4d9c164e4b82f639f00e457fe, type: 3}
@@ -245,7 +249,7 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 878710362}
   m_Enabled: 1
-  serializedVersion: 13
+  serializedVersion: 12
   m_Type: 1
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
   m_Intensity: 1
@@ -297,7 +301,7 @@ Light:
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
-  m_ShapeRadius: 0.025
+  m_ShadowRadius: 0
   m_ShadowAngle: 0
   m_LightUnit: 1
   m_LuxAtDistance: 1

@@ -5,14 +5,21 @@ public class PlayerCam : MonoBehaviour
     public float sensX;
     public float sensY;
 
-    public Transform orientaion;
+	public float fov = 90f;
+
+	public Transform orientaion;
 
     float xRotation;
     float yRotation;
 
-    private void Start()
+	private Camera cam;
+
+	private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
+		cam = GetComponent<Camera>();
+		cam.fieldOfView = fov;
+
+		Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false; 
     }
 
