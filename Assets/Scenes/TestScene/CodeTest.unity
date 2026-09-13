@@ -656,7 +656,6 @@ GameObject:
   m_Component:
   - component: {fileID: 833814083}
   - component: {fileID: 833814082}
-  - component: {fileID: 833814081}
   - component: {fileID: 833814080}
   m_Layer: 0
   m_Name: '4_CCTV_Cam '
@@ -709,14 +708,6 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!81 &833814081
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 833814079}
-  m_Enabled: 1
 --- !u!20 &833814082
 Camera:
   m_ObjectHideFlags: 0
@@ -793,7 +784,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1029748432}
   - component: {fileID: 1029748431}
-  - component: {fileID: 1029748430}
   - component: {fileID: 1029748429}
   m_Layer: 0
   m_Name: '3_CCTV_Cam '
@@ -846,14 +836,6 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!81 &1029748430
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1029748428}
-  m_Enabled: 1
 --- !u!20 &1029748431
 Camera:
   m_ObjectHideFlags: 0
@@ -1857,7 +1839,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1814901616}
   - component: {fileID: 1814901615}
-  - component: {fileID: 1814901614}
   - component: {fileID: 1814901613}
   m_Layer: 0
   m_Name: '5_CCTV_Cam '
@@ -1910,14 +1891,6 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!81 &1814901614
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1814901612}
-  m_Enabled: 1
 --- !u!20 &1814901615
 Camera:
   m_ObjectHideFlags: 0
@@ -2281,7 +2254,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2057590562}
   - component: {fileID: 2057590561}
-  - component: {fileID: 2057590560}
   - component: {fileID: 2057590559}
   m_Layer: 0
   m_Name: 1_CCTV_Cam
@@ -2334,14 +2306,6 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!81 &2057590560
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2057590558}
-  m_Enabled: 1
 --- !u!20 &2057590561
 Camera:
   m_ObjectHideFlags: 0
@@ -2634,7 +2598,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2140646871}
   - component: {fileID: 2140646870}
-  - component: {fileID: 2140646869}
   - component: {fileID: 2140646868}
   m_Layer: 0
   m_Name: '2_CCTV_Cam '
@@ -2687,14 +2650,6 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!81 &2140646869
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2140646867}
-  m_Enabled: 1
 --- !u!20 &2140646870
 Camera:
   m_ObjectHideFlags: 0
