@@ -3289,6 +3289,10 @@ PrefabInstance:
       propertyPath: cameraPosition
       value: 
       objectReference: {fileID: 76288227}
+    - target: {fileID: 5456963594931955133, guid: 5839dc85e43894549aac00fccfed6801, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7393432386258492344, guid: 5839dc85e43894549aac00fccfed6801, type: 3}
       propertyPath: m_Name
       value: PlayerCameraHolder
