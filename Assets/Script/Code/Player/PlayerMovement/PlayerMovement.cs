@@ -1,68 +1,111 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
-    public float moveSpeed;
-    public float groundDrag;
+    public float moveSpeed = 4f;
+    public float groundDrag = 5f;
 
     [Header("GroundCheck")]
-    public float playerHeight;
+    public float playerHeight = 2f;
     public LayerMask whatIsGround;
-    bool grounded;
 
     public Transform orientation;
 
-    float horizontalInput;
-    float verticalInput;
-    Vector3 moveDirection;
+    private bool grounded;
 
-    Rigidbody rb;
+    private float horizontalInput;
+    private float verticalInput;
+
+    private Vector3 moveDirection;
+
+    private Rigidbody rb;
+
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+
         rb.freezeRotation = true;
     }
 
+
     private void Update()
     {
-        grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
+        grounded = Physics.Raycast(
+            transform.position,
+            Vector3.down,
+            playerHeight * 0.5f + 0.2f,
+            whatIsGround
+        );
 
         PlayerInput();
         SpeedControl();
 
-        if(grounded)
+        if (grounded)
         {
             rb.linearDamping = groundDrag;
         }
+        else
+        {
+            rb.linearDamping = 0f;
+        }
     }
+
+
     private void FixedUpdate()
     {
         MovePlayer();
     }
 
+
     private void PlayerInput()
     {
-        horizontalInput = Input.GetAxisRaw("Horizontal");
-        verticalInput = Input.GetAxisRaw("Vertical");
-    }   
-    
+        // ใช้ชื่อ Input ของฟ้า
+        horizontalInput =
+            Input.GetAxisRaw("MoveX");
+
+        verticalInput =
+            Input.GetAxisRaw("MoveY");
+    }
+
+
     private void MovePlayer()
     {
-        moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        if (orientation == null)
+            return;
 
-        rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+        moveDirection =
+            orientation.forward * verticalInput +
+            orientation.right * horizontalInput;
+
+        rb.AddForce(
+            moveDirection.normalized *
+            moveSpeed *
+            10f,
+            ForceMode.Force
+        );
     }
+
 
     private void SpeedControl()
     {
-        Vector3 flatVel = new Vector3(rb.linearVelocity.x,0f,rb.linearVelocity.z);
+        Vector3 flatVel = new Vector3(
+            rb.linearVelocity.x,
+            0f,
+            rb.linearVelocity.z
+        );
 
-        if(flatVel.magnitude > moveSpeed)
+        if (flatVel.magnitude > moveSpeed)
         {
-            Vector3 limitedVel = flatVel.normalized * moveSpeed;
-            rb.linearVelocity = new Vector3(limitedVel.x, rb.linearVelocity.y, limitedVel.z);
+            Vector3 limitedVel =
+                flatVel.normalized * moveSpeed;
+
+            rb.linearVelocity = new Vector3(
+                limitedVel.x,
+                rb.linearVelocity.y,
+                limitedVel.z
+            );
         }
     }
 }

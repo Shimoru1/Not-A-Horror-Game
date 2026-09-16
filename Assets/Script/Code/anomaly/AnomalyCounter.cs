@@ -8,6 +8,8 @@ public class AnomalyCounter : MonoBehaviour
     [Header("Game Time")]
     public GameTime gameTime;
 
+    public AnomalyCounter counterSystem;
+
     private int currentAnomaly = 0;
     private bool gameOver = false;
 
