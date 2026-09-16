@@ -1,26 +1,33 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GameTime : MonoBehaviour
 {
     [Header("Game Time")]
+
+    // เวลาในเกม
+    // 0 = 00:00
+    // 6 = 06:00
     public float currentTime = 0f;
 
-    // 1 ���������� = 60 �Թҷը�ԧ
-    public float secondsPerHour = 60f;
+    [Tooltip("จำนวนวินาทีจริงที่ใช้ต่อ 1 ชั่วโมงในเกม")]
+    public float secondsPerHour = 50f;
 
     private bool gameEnded = false;
 
     private void Update()
     {
+        // ถ้าเกมจบแล้ว ไม่ต้องเดินเวลา
         if (gameEnded)
             return;
 
+        // เดินเวลา
         currentTime += Time.deltaTime / secondsPerHour;
 
-        // �֧ 6 ������ = ���
+        // ถึง 06:00
         if (currentTime >= 6f)
         {
             currentTime = 6f;
+
             WinGame();
         }
     }
@@ -29,10 +36,10 @@ public class GameTime : MonoBehaviour
     {
         gameEnded = true;
 
-        Debug.Log("YOU WIN!");
+        Debug.Log("YOU WIN! ได้เวลากลับบ้านแล้ว!");
     }
 
-    // ��ش����
+    // เรียกใช้เมื่ออยากหยุดเวลา
     public void StopTime()
     {
         gameEnded = true;
@@ -40,10 +47,15 @@ public class GameTime : MonoBehaviour
         Debug.Log("TIME STOPPED!");
     }
 
+    // คืนค่าเวลาเป็นรูปแบบ 00:00
     public string GetGameTime()
     {
         int hour = Mathf.FloorToInt(currentTime);
 
-        return hour.ToString("00") + ":00";
+        int minute = Mathf.FloorToInt(
+            (currentTime - hour) * 60f
+        );
+
+        return hour.ToString("00") + ":" + minute.ToString("00");
     }
 }

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
+using System.Collections.Generic;
 
 public class CCTVManager : MonoBehaviour
 {
@@ -7,104 +8,325 @@ public class CCTVManager : MonoBehaviour
     public bool isWatchingCCTV = false;
 
     [Header("CCTV Cameras")]
-    [Tooltip("ลากกล้อง CCTV ทั้ง 5 ตัวมาใส่ใน Array นี้")]
     public GameObject[] cctvCameras;
 
-    [Header("References")]
-    [Tooltip("ใส่ Script WeaponController ของกล้องลงไปที่นี่")]
+    [Header("Room Settings")]
+    public string[] roomNames;
+    public TextMeshProUGUI roomNameText;
+
+    [Header("Weapon")]
     public WeaponController cameraWeapon;
 
-    [Tooltip("เชื่อมกับ Text UI เพื่อแสดงว่ากำลังดูกล้องเบอร์อะไร (เว้นว่างไว้ก่อนได้)")]
-    public Text cameraIDText;
+    // เก็บสถานะกล้องก่อนเข้า CCTV
+    private Dictionary<Camera, bool> cameraStates =
+        new Dictionary<Camera, bool>();
 
     private int currentCameraIndex = 0;
 
-    void Start()
+
+    private void Start()
     {
         DisableAllCCTVCameras();
+
+        // เริ่มเกมโดยออกจาก CCTV
+        isWatchingCCTV = false;
+
+        Debug.Log("CCTV Manager Ready");
     }
 
-    void Update()
+
+    private void Update()
     {
-        // 1. ตรวจสอบการกดปุ่ม E เพื่อเข้า/ออก โหมดกล้อง
+        // กด E เพื่อเข้า / ออกจาก CCTV
         if (Input.GetKeyDown(KeyCode.E))
         {
+            Debug.Log("กด E แล้ว!");
+
             ToggleCCTV();
         }
 
-        // 2. ถ้ายืนยันว่ากำลังดูกล้องอยู่ ให้สามารถกดสลับกล้องได้
+        // ถ้าอยู่ใน CCTV ให้เปลี่ยนกล้องได้
         if (isWatchingCCTV)
         {
             HandleCameraSwitching();
         }
     }
 
-    void ToggleCCTV()
-    {
-        isWatchingCCTV = !isWatchingCCTV;
 
+    private void ToggleCCTV()
+    {
         if (isWatchingCCTV)
         {
-            Debug.Log("Enter CCTV Mode");
-            if (cameraWeapon != null) cameraWeapon.EnableWeapon();
-            ActivateCurrentCamera(); // เปิดกล้องตัวล่าสุด
+            ExitCCTV();
         }
         else
         {
-            Debug.Log("Exit CCTV Mode");
-            if (cameraWeapon != null) cameraWeapon.DisableWeapon();
-            DisableAllCCTVCameras(); // ปิดกล้องทั้งหมด
+            EnterCCTV();
         }
     }
 
-    void HandleCameraSwitching()
+
+    // =========================================================
+    // ENTER CCTV
+    // =========================================================
+
+    private void EnterCCTV()
     {
-        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+        Debug.Log("ENTER CCTV");
+
+        isWatchingCCTV = true;
+
+        // จำสถานะของกล้องทั้งหมดก่อนเข้า CCTV
+        SaveCameraStates();
+
+        // ปิดกล้องปกติทั้งหมด
+        DisableNormalCameras();
+
+        // เปิดกล้อง CCTV ปัจจุบัน
+        ActivateCurrentCamera();
+
+        // เปิดปืน
+        if (cameraWeapon != null)
+        {
+            cameraWeapon.EnableWeapon();
+        }
+    }
+
+
+    // =========================================================
+    // EXIT CCTV
+    // =========================================================
+
+    private void ExitCCTV()
+    {
+        Debug.Log("EXIT CCTV");
+
+        isWatchingCCTV = false;
+
+        // ปิด CCTV ทั้งหมด
+        DisableAllCCTVCameras();
+
+        // ปิดปืน
+        if (cameraWeapon != null)
+        {
+            cameraWeapon.DisableWeapon();
+        }
+
+        // เปิดกล้องเดิมกลับมา
+        RestoreCameraStates();
+    }
+
+
+    // =========================================================
+    // SAVE CAMERA STATES
+    // =========================================================
+
+    private void SaveCameraStates()
+    {
+        cameraStates.Clear();
+
+        Camera[] allCameras =
+            FindObjectsByType<Camera>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None
+            );
+
+        foreach (Camera cam in allCameras)
+        {
+            if (cam == null)
+                continue;
+
+            // ไม่ต้องจำ CCTV Camera
+            if (IsCCTVCamera(cam.gameObject))
+                continue;
+
+            cameraStates[cam] = cam.enabled;
+        }
+    }
+
+
+    // =========================================================
+    // DISABLE NORMAL CAMERAS
+    // =========================================================
+
+    private void DisableNormalCameras()
+    {
+        Camera[] allCameras =
+            FindObjectsByType<Camera>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None
+            );
+
+        foreach (Camera cam in allCameras)
+        {
+            if (cam == null)
+                continue;
+
+            // ห้ามปิด CCTV ตรงนี้
+            if (IsCCTVCamera(cam.gameObject))
+                continue;
+
+            cam.enabled = false;
+        }
+    }
+
+
+    // =========================================================
+    // RESTORE NORMAL CAMERAS
+    // =========================================================
+
+    private void RestoreCameraStates()
+    {
+        foreach (KeyValuePair<Camera, bool> pair in cameraStates)
+        {
+            if (pair.Key != null)
+            {
+                pair.Key.enabled = pair.Value;
+            }
+        }
+
+        cameraStates.Clear();
+    }
+
+
+    // =========================================================
+    // CAMERA SWITCHING
+    // =========================================================
+
+    private void HandleCameraSwitching()
+    {
+        if (cctvCameras == null || cctvCameras.Length == 0)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.A) ||
+            Input.GetKeyDown(KeyCode.LeftArrow))
         {
             SwitchCamera(-1);
         }
-        else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+
+        else if (Input.GetKeyDown(KeyCode.D) ||
+                 Input.GetKeyDown(KeyCode.RightArrow))
         {
             SwitchCamera(1);
         }
     }
 
-    void SwitchCamera(int direction)
+
+    private void SwitchCamera(int direction)
     {
-        if (cctvCameras.Length == 0) return;
+        if (cctvCameras == null ||
+            cctvCameras.Length == 0)
+            return;
 
-        cctvCameras[currentCameraIndex].SetActive(false); // ปิดตัวเก่า
+        // ปิดกล้องปัจจุบัน
+        if (cctvCameras[currentCameraIndex] != null)
+        {
+            cctvCameras[currentCameraIndex].SetActive(false);
+        }
 
+        // เปลี่ยน Index
         currentCameraIndex += direction;
 
-        if (currentCameraIndex >= cctvCameras.Length) currentCameraIndex = 0;
-        else if (currentCameraIndex < 0) currentCameraIndex = cctvCameras.Length - 1;
+        // วนกลับเมื่อถึงสุด
+        if (currentCameraIndex >= cctvCameras.Length)
+        {
+            currentCameraIndex = 0;
+        }
 
-        ActivateCurrentCamera(); // เปิดตัวใหม่
+        else if (currentCameraIndex < 0)
+        {
+            currentCameraIndex =
+                cctvCameras.Length - 1;
+        }
+
+        // เปิดกล้องใหม่
+        ActivateCurrentCamera();
     }
 
-    void ActivateCurrentCamera()
+
+    // =========================================================
+    // ACTIVATE CURRENT CCTV
+    // =========================================================
+
+    private void ActivateCurrentCamera()
     {
-        if (cctvCameras.Length > 0 && currentCameraIndex >= 0 && currentCameraIndex < cctvCameras.Length)
+        if (cctvCameras == null ||
+            cctvCameras.Length == 0)
+            return;
+
+        if (currentCameraIndex >= cctvCameras.Length)
+            return;
+
+        GameObject currentCamera =
+            cctvCameras[currentCameraIndex];
+
+        if (currentCamera != null)
         {
-            cctvCameras[currentCameraIndex].SetActive(true);
+            currentCamera.SetActive(true);
+
             UpdateCameraUI();
         }
     }
 
-    void DisableAllCCTVCameras()
+
+    // =========================================================
+    // DISABLE ALL CCTV
+    // =========================================================
+
+    private void DisableAllCCTVCameras()
     {
+        if (cctvCameras == null)
+            return;
+
         foreach (GameObject cam in cctvCameras)
         {
-            if (cam != null) cam.SetActive(false);
+            if (cam != null)
+            {
+                cam.SetActive(false);
+            }
         }
     }
 
-    void UpdateCameraUI()
+
+    // =========================================================
+    // CHECK CCTV CAMERA
+    // =========================================================
+
+    private bool IsCCTVCamera(GameObject obj)
     {
-        if (cameraIDText != null)
+        if (cctvCameras == null)
+            return false;
+
+        foreach (GameObject cam in cctvCameras)
         {
-            cameraIDText.text = "CAM 0" + (currentCameraIndex + 1);
+            if (cam == obj)
+                return true;
         }
+
+        return false;
+    }
+
+    public int GetCurrentCameraIndex()
+    {
+        return currentCameraIndex;
+    }
+
+    // =========================================================
+    // UPDATE ROOM UI
+    // =========================================================
+
+    private void UpdateCameraUI()
+    {
+        if (roomNameText == null)
+            return;
+
+        if (roomNames == null)
+            return;
+
+        if (currentCameraIndex >= roomNames.Length)
+            return;
+
+        roomNameText.text =
+            roomNames[currentCameraIndex];
     }
 }
