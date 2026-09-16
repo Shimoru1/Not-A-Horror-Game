@@ -448,7 +448,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2263796090733593937, guid: 5839dc85e43894549aac00fccfed6801, type: 3}
       propertyPath: fov
-      value: 50
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: 2263796090733593937, guid: 5839dc85e43894549aac00fccfed6801, type: 3}
       propertyPath: orientaion
