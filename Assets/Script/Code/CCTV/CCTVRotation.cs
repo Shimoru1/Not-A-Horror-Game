@@ -2,50 +2,95 @@
 
 public class CCTVRotation : MonoBehaviour
 {
-    [Header("Rotation Settings")]
-    public float sensitivity = 2f;
-    public float maxYAngle = 80f; // ล็อกมุมก้มเงย ไม่ให้กล้องหมุนตีลังกา
+    [Header("Mouse Sensitivity")]
+    public float mouseSensitivity = 2.5f;
 
-    // ตั้งค่าลิมิตการหันซ้ายขวา (ปรับตามความกว้างของแต่ละห้อง)
-    public float minXAngle = -45f;
-    public float maxXAngle = 45f;
+    [Header("Rotation Limits")]
+    public float horizontalLimit = 80f;
+    public float verticalUpLimit = 45f;
+    public float verticalDownLimit = 45f;
 
-    private float rotationX = 0f;
-    private float rotationY = 0f;
+    private float horizontalRotation = 0f;
+    private float verticalRotation = 0f;
 
-    // เก็บค่า Rotation เริ่มต้นของกล้องแต่ละตัวไว้เป็นจุดศูนย์กลาง
     private Vector3 startRotation;
 
-    void Start()
+    private void Awake()
     {
         startRotation = transform.localEulerAngles;
+
+        horizontalRotation = 0f;
+        verticalRotation = 0f;
     }
 
-    void Update()
+    private void OnEnable()
     {
-        // ให้กล้องหมุนได้เฉพาะตอนที่ถูกเปิดใช้งาน (isActiveAndEnabled)
-        if (isActiveAndEnabled)
-        {
-            float mouseX = Input.GetAxis("Mouse X") * sensitivity;
-            float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
+        // รีเซ็ตมุมเมื่อเปิด CCTV
+        horizontalRotation = 0f;
+        verticalRotation = 0f;
 
-            // คำนวณแกน Y (ซ้ายขวา)
-            rotationY += mouseX;
-            rotationY = Mathf.Clamp(rotationY, minXAngle, maxXAngle);
-
-            // คำนวณแกน X (ก้มเงย)
-            rotationX -= mouseY;
-            rotationX = Mathf.Clamp(rotationX, -maxYAngle, maxYAngle);
-
-            // นำค่าเริ่มต้นมาบวกกับค่าที่เมาส์ขยับ
-            transform.localRotation = Quaternion.Euler(startRotation.x + rotationX, startRotation.y + rotationY, 0f);
-        }
+        LockMouse();
     }
 
-    void OnEnable()
+    private void OnDisable()
     {
-        // รีเซ็ตมุมกล้องกลับมาตรงกลางทุกครั้งที่สลับกล้อง
-        rotationX = 0f;
-        rotationY = 0f;
+        UnlockMouse();
+    }
+
+    private void Update()
+    {
+        // ทำงานเฉพาะตอนกล้องนี้กำลังเปิดอยู่
+        if (!gameObject.activeInHierarchy)
+            return;
+
+        RotateCamera();
+    }
+
+    private void RotateCamera()
+    {
+        float mouseX =
+            Input.GetAxis("MouseX") * mouseSensitivity;
+
+        float mouseY =
+            Input.GetAxis("MouseY") * mouseSensitivity;
+
+        // ซ้าย / ขวา
+        horizontalRotation += mouseX;
+
+        horizontalRotation =
+            Mathf.Clamp(
+                horizontalRotation,
+                -horizontalLimit,
+                horizontalLimit
+            );
+
+        // ขึ้น / ลง
+        verticalRotation -= mouseY;
+
+        verticalRotation =
+            Mathf.Clamp(
+                verticalRotation,
+                -verticalUpLimit,
+                verticalDownLimit
+            );
+
+        transform.localRotation =
+            Quaternion.Euler(
+                startRotation.x + verticalRotation,
+                startRotation.y + horizontalRotation,
+                startRotation.z
+            );
+    }
+
+    private void LockMouse()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    private void UnlockMouse()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 }

@@ -19,7 +19,10 @@ public class ButtonManager : MonoBehaviour
 	private ButtonHover quitHover;
 
 	[HideInInspector]
+
 	public bool buttonsShown = false;
+	[Header("Music")]
+	[SerializeField] private AudioSource menuMusic;
 
 	[Header("Stage Select")]
 	public GameObject stageSelect;
@@ -292,6 +295,11 @@ public class ButtonManager : MonoBehaviour
 		start.interactable = false;
 		nextStage.interactable = false;
 		previousStage.interactable = false;
+
+		if (menuMusic != null)
+		{
+			menuMusic.Stop();
+		}
 
 		if (TransitionManager.Instance == null)
 		{
