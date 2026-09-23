@@ -42,6 +42,14 @@ public class WeaponController : MonoBehaviour
     [Header("UI References")]
     public TextMeshProUGUI ammoText;
 
+    [Header("Ammo Game Over")]
+    [Tooltip("ถ้ากระสุนของกล้องปัจจุบันหมดทั้ง Magazine และ Reserve ให้แพ้")]
+    public bool ammoEmptyCausesGameOver = true;
+
+    [Tooltip("แสดงสถานะว่ากระสุนของกล้องปัจจุบันหมดหรือไม่")]
+    [SerializeField]
+    private bool currentCameraAmmoEmpty = false;
+
     private int currentCameraIndex = 0;
 
     void Awake()
@@ -130,6 +138,9 @@ public class WeaponController : MonoBehaviour
         ammo.magazineAmmo--;
 
         UpdateAmmoUI();
+
+        // ตรวจว่ากระสุนหมดทั้ง Magazine + Reserve หรือไม่
+        CheckAmmoGameOver();
 
         Debug.Log(
             "Bang! Camera " + (currentCameraIndex + 1) +
@@ -306,6 +317,9 @@ public class WeaponController : MonoBehaviour
         UpdateCurrentCameraIndex();
         UpdateAmmoUI();
 
+        // ตรวจสถานะกระสุนหลัง Reload
+        CheckAmmoGameOver();
+
         CameraAmmo current = GetCurrentAmmoData();
 
         if (current != null)
@@ -429,6 +443,50 @@ public class WeaponController : MonoBehaviour
 
         return null;
     }
+
+    // =========================================
+    // Ammo Game Over Check
+    // =========================================
+
+    void CheckAmmoGameOver()
+    {
+        if (!ammoEmptyCausesGameOver)
+            return;
+
+        // ถ้าเกมจบไปแล้ว ไม่ต้องตรวจซ้ำ
+        if (GameManager.Instance != null &&
+            !GameManager.Instance.IsPlaying())
+        {
+            return;
+        }
+
+        CameraAmmo ammo = GetCurrentAmmoData();
+
+        if (ammo == null)
+            return;
+
+        // กระสุนหมดจริงเมื่อ Magazine และ Reserve เป็น 0 ทั้งคู่
+        currentCameraAmmoEmpty =
+            ammo.magazineAmmo <= 0 &&
+            ammo.reserveAmmo <= 0;
+
+        if (!currentCameraAmmoEmpty)
+            return;
+
+        Debug.Log(
+            "GAME OVER! Camera " +
+            (currentCameraIndex + 1) +
+            " กระสุนหมดทั้ง Magazine และ Reserve!"
+        );
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.GameOver(
+                GameManager.GameOverReason.OutOfAmmo
+            );
+        }
+    }
+
 
     // =========================================
     // Ammo UI
