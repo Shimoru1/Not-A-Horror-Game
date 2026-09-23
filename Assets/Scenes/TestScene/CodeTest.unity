@@ -1555,6 +1555,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AnomalyWander
   walkSpeed: 1.5
   waitAtPoint: 1
+  walkPoints: []
 --- !u!114 &1185628266
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1952,6 +1953,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AnomalyWander
   walkSpeed: 1.5
   waitAtPoint: 1
+  walkPoints: []
 --- !u!114 &1318942826
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2344,6 +2346,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AnomalyWander
   walkSpeed: 1.5
   waitAtPoint: 1
+  walkPoints: []
 --- !u!114 &1467834004
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2575,11 +2578,21 @@ MonoBehaviour:
   damage: 5
   range: 100
   maxAmmo: 30
+  cameraAmmo:
+  - magazineAmmo: 30
+    reserveAmmo: 0
+  - magazineAmmo: 30
+    reserveAmmo: 0
+  - magazineAmmo: 30
+    reserveAmmo: 0
+  - magazineAmmo: 30
+    reserveAmmo: 0
+  - magazineAmmo: 30
+    reserveAmmo: 0
   canShoot: 0
   targetLayer:
     serializedVersion: 2
     m_Bits: 4294967295
-  reloadTime: 1
   bulletTrail: {fileID: 1680803556}
   gunBarrels:
   - {fileID: 1403135644}
@@ -2588,8 +2601,8 @@ MonoBehaviour:
   - {fileID: 391877201}
   - {fileID: 468937834}
   trailDuration: 1
-  ammoText: {fileID: 1907736161}
-  reserveAmmo: 0
+  reloadTime: 1
+  ammoText: {fileID: 0}
 --- !u!4 &1547771253
 Transform:
   m_ObjectHideFlags: 0
@@ -2722,7 +2735,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameTimeUI
   gameTime: {fileID: 1213831026}
-  timeText: {fileID: 286593855}
+  timeText: {fileID: 0}
 --- !u!114 &1679262820
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2736,7 +2749,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CCTVUIController
   cctvManager: {fileID: 1680803554}
-  cctvUI: {fileID: 718393747}
+  cctvUI: {fileID: 0}
 --- !u!1 &1680803553
 GameObject:
   m_ObjectHideFlags: 0
@@ -2780,7 +2793,7 @@ MonoBehaviour:
   - Room3
   - Room4
   - Room5
-  roomNameText: {fileID: 1814627126}
+  roomNameText: {fileID: 0}
   cameraWeapon: {fileID: 1547771252}
 --- !u!4 &1680803555
 Transform:
