@@ -350,9 +350,9 @@ MonoBehaviour:
   tutorialImage: {fileID: 637699002}
   tutorialPages:
   - {fileID: 21300000, guid: 23c567c8b5fa8d04cb096db7965a8ff6, type: 3}
-  - {fileID: 21300000, guid: 1f7dd358f0356a74d9488a37d12cfa0a, type: 3}
-  - {fileID: 21300000, guid: 7e99e051961cb3643b6ddb5056e5400f, type: 3}
-  - {fileID: 21300000, guid: b1a2dc2fe7b01dd448642739d11c2ef2, type: 3}
+  - {fileID: 21300000, guid: 1b205611cf8a2984885c6073c49a30c9, type: 3}
+  - {fileID: 21300000, guid: 63638a159e13b3a41a9b6ad82fee5297, type: 3}
+  - {fileID: 21300000, guid: 81a1a6427c63bcc44a422453019e7237, type: 3}
   backButton: {fileID: 1928334883}
   nextButton: {fileID: 263052392}
   closeButton: {fileID: 891935872}
