@@ -2,20 +2,20 @@ using UnityEngine;
 
 public class BackgroundPan : MonoBehaviour
 {
-	public float panDistance = 5f;
+	public float panAngle = 15f;
 	public float panSpeed = 0.5f;
 
-	private Vector3 startPosition;
+	private Quaternion startRotation;
 
 	void Start()
 	{
-		startPosition = transform.position;
+		startRotation = transform.rotation;
 	}
 
 	void Update()
 	{
-		float x = Mathf.Sin(Time.time * panSpeed) * panDistance;
+		float angle = Mathf.Sin(Time.time * panSpeed) * panAngle;
 
-		transform.position = startPosition + new Vector3(x, 0, 0);
+		transform.rotation = startRotation * Quaternion.Euler(0, angle, 0);
 	}
 }
