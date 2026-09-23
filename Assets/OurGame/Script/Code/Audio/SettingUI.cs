@@ -3,12 +3,14 @@ using UnityEngine.UI;
 
 public class SettingUI : MonoBehaviour
 {
+    private ButtonManager buttonManager;
 	[Header("Settings")]
 	[SerializeField] private GameObject settingsPanel;
 	[SerializeField] private Slider volumeSlider;
 
 	private void Start()
 	{
+		buttonManager = GetComponent<ButtonManager>();
 		settingsPanel.SetActive(false);
 
 		volumeSlider.minValue = 0f;
@@ -22,6 +24,7 @@ public class SettingUI : MonoBehaviour
 	public void OpenSettings()
 	{
 		settingsPanel.SetActive(true);
+		buttonManager.OnPlayClick();
 
 		volumeSlider.value = AudioManager.Instance.GetVolume();
 	}
@@ -29,6 +32,7 @@ public class SettingUI : MonoBehaviour
 	public void CloseSettings()
 	{
 		settingsPanel.SetActive(false);
+		buttonManager.ShowButtonsImmediately();
 	}
 
 	private void OnVolumeChanged(float value)

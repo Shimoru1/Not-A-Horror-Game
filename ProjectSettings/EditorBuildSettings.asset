@@ -6,16 +6,19 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/MainScene/MainMenu.unity
+    path: Assets/OurGame/Scenes/MainScene/MainMenu.unity
     guid: 3bcdf38a745257d4e84488406361b2a0
   - enabled: 1
-    path: Assets/Scenes/MainScene/MainMap3.unity
+    path: Assets/OurGame/Scenes/MainScene/MainMap3.unity
     guid: f64210be48274074f8f1ddb33979e02d
   - enabled: 1
-    path: Assets/Scenes/MainScene/MainMap.unity
+    path: Assets/OurGame/Scenes/TestScene/CodeTest.unity
+    guid: b3860e7792c90b04baea89f9ae02a06e
+  - enabled: 1
+    path: Assets/OurGame/Scenes/MainScene/MainMap.unity
     guid: 30d18faf13aa0b248af31b37e2b1a3d9
   - enabled: 1
-    path: Assets/Scenes/MainScene/MainMap2.unity
+    path: Assets/OurGame/Scenes/MainScene/MainMap2.unity
     guid: 7a4c65727121ccd478e97c7bc7c63e84
   m_configObjects:
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 6751c2cbfe18a474da2f42d430409870, type: 2}

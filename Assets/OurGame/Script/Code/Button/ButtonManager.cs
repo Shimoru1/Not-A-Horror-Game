@@ -9,6 +9,7 @@ public class ButtonManager : MonoBehaviour
 {
 	[Header("Main Menu")]
 	public Image logo;
+	public Image Bg;
 	public Button play;
 	public Button setting;
 	public Button quit;
@@ -41,9 +42,20 @@ public class ButtonManager : MonoBehaviour
 	[Header("Stage Fade")]
 	public float fadeDuration = 0.3f;
 
+
+	private Coroutine buttonsSequence;
+	private bool cancelButtonSequence = false;
+	private Vector3 playNormalScale;
+	private Vector3 settingNormalScale;
+	private Vector3 quitNormalScale;
+
 	private void Start()
 	{
-		playHover = play.GetComponent<ButtonHover>();
+		playNormalScale = play.GetComponent<RectTransform>().localScale;
+		settingNormalScale = setting.GetComponent<RectTransform>().localScale;
+		quitNormalScale = quit.GetComponent<RectTransform>().localScale;
+
+	    playHover = play.GetComponent<ButtonHover>();
 		settingHover = setting.GetComponent<ButtonHover>();
 		quitHover = quit.GetComponent<ButtonHover>();
 
@@ -69,8 +81,14 @@ public class ButtonManager : MonoBehaviour
 	public void ShowButtons()
 	{
 		buttonsShown = true;
+		cancelButtonSequence = false;
 
-		StartCoroutine(ShowButtonsSequence());
+		if (buttonsSequence != null)
+		{
+			StopCoroutine(buttonsSequence);
+		}
+
+		buttonsSequence = StartCoroutine(ShowButtonsSequence());
 	}
 
 	IEnumerator ShowButtonsSequence()
@@ -78,18 +96,56 @@ public class ButtonManager : MonoBehaviour
 		play.gameObject.SetActive(true);
 		yield return StartCoroutine(ZoomButton(play));
 
+		if (cancelButtonSequence)
+			yield break;
+
 		setting.gameObject.SetActive(true);
 		yield return StartCoroutine(ZoomButton(setting));
 
+		if (cancelButtonSequence)
+			yield break;
+
 		quit.gameObject.SetActive(true);
 		yield return StartCoroutine(ZoomButton(quit));
+
+		buttonsSequence = null;
+	}
+	public void ShowButtonsImmediately()
+	{
+		cancelButtonSequence = false;
+
+		if (buttonsSequence != null)
+		{
+			StopCoroutine(buttonsSequence);
+			buttonsSequence = null;
+		}
+		playHover.ResetButton();
+		settingHover.ResetButton();
+		quitHover.ResetButton();
+
+		play.GetComponent<RectTransform>().localScale = playNormalScale;
+		setting.GetComponent<RectTransform>().localScale = settingNormalScale;
+		quit.GetComponent<RectTransform>().localScale = quitNormalScale;
+
+		play.gameObject.SetActive(true);
+		setting.gameObject.SetActive(true);
+		quit.gameObject.SetActive(true);
+
+		buttonsShown = true;
 	}
 
 	IEnumerator ZoomButton(Button button)
 	{
 		RectTransform rect = button.GetComponent<RectTransform>();
 
-		Vector3 normalScale = rect.localScale;
+		Vector3 normalScale;
+
+		if (button == play)
+			normalScale = playNormalScale;
+		else if (button == setting)
+			normalScale = settingNormalScale;
+		else
+			normalScale = quitNormalScale;
 
 		rect.localScale = Vector3.zero;
 
@@ -98,10 +154,15 @@ public class ButtonManager : MonoBehaviour
 
 		while (timer < duration)
 		{
+			if (cancelButtonSequence)
+			{
+				button.gameObject.SetActive(false);
+				yield break;
+			}
+
 			timer += Time.deltaTime;
 
 			float t = timer / duration;
-
 			t = Mathf.SmoothStep(0f, 1f, t);
 
 			rect.localScale = Vector3.Lerp(Vector3.zero, normalScale, t);
@@ -111,10 +172,39 @@ public class ButtonManager : MonoBehaviour
 
 		rect.localScale = normalScale;
 	}
+	public void HideRemainingButtons()
+	{
+		cancelButtonSequence = true;
+		if (buttonsSequence != null)
+		{
+			StopCoroutine(buttonsSequence);
+			buttonsSequence = null;
+		}
+
+		play.gameObject.SetActive(false);
+		setting.gameObject.SetActive(false);
+		quit.gameObject.SetActive(false);
+		ResetButton(play);
+		ResetButton(setting);
+		ResetButton(quit);
+	}
+	void ResetButton(Button button)
+	{
+		RectTransform rect = button.GetComponent<RectTransform>();
+
+		rect.localScale = Vector3.zero;
+		button.gameObject.SetActive(false);
+	}
+	public void OnPlayClick()
+	{
+		HideRemainingButtons();
+	}
 
 	public void Play()
 	{
+		OnPlayClick();
 		logo.gameObject.SetActive(false);
+		Bg.gameObject.SetActive(true);
 
 		play.gameObject.SetActive(false);
 		setting.gameObject.SetActive(false);
@@ -135,6 +225,11 @@ public class ButtonManager : MonoBehaviour
 	public void Back()
 	{
 		logo.gameObject.SetActive(true);
+		Bg.gameObject.SetActive(false);
+
+		play.GetComponent<RectTransform>().localScale = playNormalScale;
+		setting.GetComponent<RectTransform>().localScale = settingNormalScale;
+		quit.GetComponent<RectTransform>().localScale = quitNormalScale;
 
 		play.gameObject.SetActive(true);
 		setting.gameObject.SetActive(true);
