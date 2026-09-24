@@ -51,8 +51,9 @@ public class GameManager : MonoBehaviour
 
         currentState = GameState.Win;
         gameOverReason = GameOverReason.None;
+		UnlockMouse();
 
-        if (showDebugLog)
+		if (showDebugLog)
         {
             Debug.Log("================================");
             Debug.Log("YOU WIN!");
@@ -80,8 +81,9 @@ public class GameManager : MonoBehaviour
 
         currentState = GameState.GameOver;
         gameOverReason = reason;
+		UnlockMouse();
 
-        if (showDebugLog)
+		if (showDebugLog)
         {
             Debug.Log("================================");
             Debug.Log("GAME OVER!");
@@ -122,4 +124,9 @@ public class GameManager : MonoBehaviour
     {
         return gameOverReason;
     }
+	private void UnlockMouse()
+	{
+		Cursor.lockState = CursorLockMode.None;
+		Cursor.visible = true;
+	}
 }

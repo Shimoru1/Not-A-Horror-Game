@@ -17,8 +17,11 @@ public class CCTVManager : MonoBehaviour
     [Header("Weapon")]
     public WeaponController cameraWeapon;
 
-    // เก็บสถานะกล้องก่อนเข้า CCTV
-    private Dictionary<Camera, bool> cameraStates =
+	[Header("CCTV UI")]
+	public GameObject cctvUI;
+
+	// เก็บสถานะกล้องก่อนเข้า CCTV
+	private Dictionary<Camera, bool> cameraStates =
         new Dictionary<Camera, bool>();
 
     private int currentCameraIndex = 0;
@@ -31,14 +34,27 @@ public class CCTVManager : MonoBehaviour
         // เริ่มเกมโดยออกจาก CCTV
         isWatchingCCTV = false;
 
-        Debug.Log("CCTV Manager Ready");
+		if (cctvUI != null)
+		{
+			cctvUI.SetActive(false);
+		}
+
+		LockMouse();
+
+		Debug.Log("CCTV Manager Ready");
     }
 
 
     private void Update()
     {
-        // กด E เพื่อเข้า / ออกจาก CCTV
-        if (Input.GetKeyDown(KeyCode.E))
+		if (GameManager.Instance != null &&
+		!GameManager.Instance.IsPlaying())
+		{
+			return;
+		}
+
+		// กด E เพื่อเข้า / ออกจาก CCTV
+		if (Input.GetKeyDown(KeyCode.E))
         {
             Debug.Log("กด E แล้ว!");
 
@@ -51,9 +67,14 @@ public class CCTVManager : MonoBehaviour
             HandleCameraSwitching();
         }
     }
+	private void LockMouse()
+	{
+		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.visible = false;
+	}
 
 
-    private void ToggleCCTV()
+	private void ToggleCCTV()
     {
         if (isWatchingCCTV)
         {
@@ -85,8 +106,13 @@ public class CCTVManager : MonoBehaviour
         // เปิดกล้อง CCTV ปัจจุบัน
         ActivateCurrentCamera();
 
-        // เปิดปืน
-        if (cameraWeapon != null)
+		if (cctvUI != null)
+		{
+			cctvUI.SetActive(true);
+		}
+
+		// เปิดปืน
+		if (cameraWeapon != null)
         {
             cameraWeapon.EnableWeapon();
         }
@@ -106,8 +132,13 @@ public class CCTVManager : MonoBehaviour
         // ปิด CCTV ทั้งหมด
         DisableAllCCTVCameras();
 
-        // ปิดปืน
-        if (cameraWeapon != null)
+		if (cctvUI != null)
+		{
+			cctvUI.SetActive(false);
+		}
+
+		// ปิดปืน
+		if (cameraWeapon != null)
         {
             cameraWeapon.DisableWeapon();
         }

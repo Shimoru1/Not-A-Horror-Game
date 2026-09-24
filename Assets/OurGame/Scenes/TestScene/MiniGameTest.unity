@@ -1410,6 +1410,7 @@ MonoBehaviour:
   - Room5
   roomNameText: {fileID: 1792377377}
   cameraWeapon: {fileID: 363306902}
+  cctvUI: {fileID: 0}
 --- !u!4 &654970701
 Transform:
   m_ObjectHideFlags: 0
@@ -1574,7 +1575,7 @@ MonoBehaviour:
   endGameHour: 6
   currentTime: 0
   currentGameTime: 00:00
-  testMode: 0
+  testMode: 1
   testDurationSeconds: 30
 --- !u!4 &667073446
 Transform:

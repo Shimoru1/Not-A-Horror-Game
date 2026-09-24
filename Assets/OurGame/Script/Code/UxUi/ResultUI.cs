@@ -92,4 +92,8 @@ public class ResultUI : MonoBehaviour
         Scene currentScene = SceneManager.GetActiveScene();
         SceneManager.LoadScene(currentScene.name);
     }
+    public void LeaveGame() 
+    {
+		SceneManager.LoadScene("MainMenu");
+	}
 }

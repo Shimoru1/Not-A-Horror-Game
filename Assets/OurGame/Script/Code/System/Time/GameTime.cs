@@ -114,7 +114,7 @@ public class GameTime : MonoBehaviour
     {
         gameEnded = true;
 
-        Debug.Log("================================");
+		Debug.Log("================================");
         Debug.Log("YOU WIN!");
         Debug.Log("Game Time Reached: " + GetGameTime());
         Debug.Log("================================");
