@@ -17,14 +17,20 @@ public class CCTVManager : MonoBehaviour
     [Header("Weapon")]
     public WeaponController cameraWeapon;
 
-	[Header("CCTV UI")]
-	public GameObject cctvUI;
+    [Header("CCTV UI")]
+    public GameObject cctvUI;
 
-	// เก็บสถานะกล้องก่อนเข้า CCTV
-	private Dictionary<Camera, bool> cameraStates =
+    // เก็บสถานะกล้องก่อนเข้า CCTV
+    private Dictionary<Camera, bool> cameraStates =
         new Dictionary<Camera, bool>();
 
     private int currentCameraIndex = 0;
+
+    [Header("Computer Interaction")]
+    [Tooltip("ต้องอยู่ใกล้ Computer ภายในระยะนี้จึงจะกด E เพื่อเข้า CCTV ได้")]
+    [SerializeField] private float computerInteractionDistance = 2.5f;
+
+    private Transform playerTransform;
 
 
     private void Start()
@@ -34,31 +40,54 @@ public class CCTVManager : MonoBehaviour
         // เริ่มเกมโดยออกจาก CCTV
         isWatchingCCTV = false;
 
-		if (cctvUI != null)
-		{
-			cctvUI.SetActive(false);
-		}
+        if (cctvUI != null)
+        {
+            cctvUI.SetActive(false);
+        }
 
-		LockMouse();
+        LockMouse();
 
-		Debug.Log("CCTV Manager Ready");
+        // หา Player สำหรับตรวจระยะจาก Computer
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject != null)
+        {
+            playerTransform = playerObject.transform;
+        }
+        else
+        {
+            Debug.LogWarning("CCTVManager: ไม่พบ GameObject ที่มี Tag = Player");
+        }
+
+        Debug.Log("CCTV Manager Ready");
     }
 
 
     private void Update()
     {
-		if (GameManager.Instance != null &&
-		!GameManager.Instance.IsPlaying())
-		{
-			return;
-		}
-
-		// กด E เพื่อเข้า / ออกจาก CCTV
-		if (Input.GetKeyDown(KeyCode.E))
+        if (GameManager.Instance != null &&
+        !GameManager.Instance.IsPlaying())
         {
-            Debug.Log("กด E แล้ว!");
+            return;
+        }
 
-            ToggleCCTV();
+        // กด E เพื่อเข้า / ออกจาก CCTV
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            // ถ้าอยู่ใน CCTV แล้ว กด E เพื่อออกได้ทันที
+            if (isWatchingCCTV)
+            {
+                ToggleCCTV();
+            }
+            // ถ้ายังไม่อยู่ใน CCTV ต้องอยู่ใกล้ Computer ก่อน
+            else if (IsNearComputer())
+            {
+                Debug.Log("กด E ที่ Computer → เข้า CCTV");
+                ToggleCCTV();
+            }
+            else
+            {
+                Debug.Log("กด E แล้ว แต่ไม่ได้อยู่ใกล้ Computer");
+            }
         }
 
         // ถ้าอยู่ใน CCTV ให้เปลี่ยนกล้องได้
@@ -67,14 +96,14 @@ public class CCTVManager : MonoBehaviour
             HandleCameraSwitching();
         }
     }
-	private void LockMouse()
-	{
-		Cursor.lockState = CursorLockMode.Locked;
-		Cursor.visible = false;
-	}
+    private void LockMouse()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
 
 
-	private void ToggleCCTV()
+    private void ToggleCCTV()
     {
         if (isWatchingCCTV)
         {
@@ -86,6 +115,64 @@ public class CCTVManager : MonoBehaviour
         }
     }
 
+
+
+    // =========================================================
+    // COMPUTER INTERACTION
+    // =========================================================
+
+    private bool IsNearComputer()
+    {
+        if (playerTransform == null)
+        {
+            GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+
+            if (playerObject != null)
+            {
+                playerTransform = playerObject.transform;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        GameObject[] computers;
+
+        try
+        {
+            computers = GameObject.FindGameObjectsWithTag("Computer");
+        }
+        catch (UnityException)
+        {
+            Debug.LogError("CCTVManager: ไม่พบ Tag 'Computer' ใน Project Settings > Tags and Layers");
+            return false;
+        }
+
+        foreach (GameObject computer in computers)
+        {
+            if (computer == null || !computer.activeInHierarchy)
+                continue;
+
+            // ใช้จุดกึ่งกลางของ Collider ถ้ามี เพื่อให้ระยะอ้างอิงเหมาะกับโมเดลคอม
+            Collider col = computer.GetComponent<Collider>();
+            Vector3 targetPosition = col != null ? col.bounds.center : computer.transform.position;
+
+            float distance = Vector3.Distance(playerTransform.position, targetPosition);
+
+            if (distance <= computerInteractionDistance)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        // ไม่วาดรอบ Computer ที่นี่ เพราะ Computer เป็น Object ภายในฉากหลายตัวได้
+    }
 
     // =========================================================
     // ENTER CCTV
@@ -106,13 +193,13 @@ public class CCTVManager : MonoBehaviour
         // เปิดกล้อง CCTV ปัจจุบัน
         ActivateCurrentCamera();
 
-		if (cctvUI != null)
-		{
-			cctvUI.SetActive(true);
-		}
+        if (cctvUI != null)
+        {
+            cctvUI.SetActive(true);
+        }
 
-		// เปิดปืน
-		if (cameraWeapon != null)
+        // เปิดปืน
+        if (cameraWeapon != null)
         {
             cameraWeapon.EnableWeapon();
         }
@@ -132,13 +219,13 @@ public class CCTVManager : MonoBehaviour
         // ปิด CCTV ทั้งหมด
         DisableAllCCTVCameras();
 
-		if (cctvUI != null)
-		{
-			cctvUI.SetActive(false);
-		}
+        if (cctvUI != null)
+        {
+            cctvUI.SetActive(false);
+        }
 
-		// ปิดปืน
-		if (cameraWeapon != null)
+        // ปิดปืน
+        if (cameraWeapon != null)
         {
             cameraWeapon.DisableWeapon();
         }

@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - AnomalyWalkPoint
+  - Computer
   layers:
   - Default
   - TransparentFX
