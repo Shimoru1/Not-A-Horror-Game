@@ -3,10 +3,45 @@ using System.Collections;
 
 public class AnomalyTarget : MonoBehaviour
 {
+    // ==================================================
+    // ANOMALY TYPE
+    // ==================================================
+
+    public enum AnomalyType
+    {
+        Threat,
+        Disturbance,
+        Harmless
+    }
+
+
+    [Header("Anomaly Type")]
+
+    [Tooltip("กำหนดประเภทของ Anomaly")]
+    public AnomalyType anomalyType = AnomalyType.Threat;
+
+    [Tooltip("Anomaly ตัวนี้สามารถถูกยิงได้หรือไม่")]
+    public bool canBeShot = true;
+
+    [Tooltip("Anomaly ตัวนี้ต้องใช้ Interaction จัดการหรือไม่")]
+    public bool requiresInteraction = false;
+
+    [Tooltip("Anomaly ตัวนี้ไม่มีอันตราย")]
+    public bool isHarmless = false;
+
+
+    // ==================================================
+    // HEALTH
+    // ==================================================
+
     [Header("Health")]
 
     public int health = 10;
 
+
+    // ==================================================
+    // AMMO DROP
+    // ==================================================
 
     [Header("Ammo Drop")]
 
@@ -22,11 +57,19 @@ public class AnomalyTarget : MonoBehaviour
     public int maxAmmoDrop = 10;
 
 
+    // ==================================================
+    // COUNTER
+    // ==================================================
+
     [Header("Counter")]
 
     [Tooltip("ไม่จำเป็นต้องลาก ถ้าว่างระบบจะหาให้อัตโนมัติ")]
     public AnomalyCounter counterSystem;
 
+
+    // ==================================================
+    // INTERNAL
+    // ==================================================
 
     private bool isDead = false;
 
@@ -38,8 +81,7 @@ public class AnomalyTarget : MonoBehaviour
     private void Awake()
     {
         // ==============================================
-        // ถ้าไม่ได้ลาก Counter มา
-        // ให้หา AnomalyCounter ใน Scene อัตโนมัติ
+        // หา Counter อัตโนมัติ
         // ==============================================
 
         if (counterSystem == null)
@@ -63,6 +105,54 @@ public class AnomalyTarget : MonoBehaviour
                 " → เชื่อมกับ AnomalyCounter แล้ว"
             );
         }
+
+
+        // ==============================================
+        // ตั้งค่าตาม Anomaly Type
+        // ==============================================
+
+        ApplyAnomalyTypeSettings();
+    }
+
+
+    // ==================================================
+    // APPLY TYPE SETTINGS
+    // ==================================================
+
+    private void ApplyAnomalyTypeSettings()
+    {
+        switch (anomalyType)
+        {
+            case AnomalyType.Threat:
+
+                // Threat = สามารถยิงได้
+                canBeShot = true;
+                requiresInteraction = false;
+                isHarmless = false;
+
+                break;
+
+
+            case AnomalyType.Disturbance:
+
+                // Disturbance = ตอนนี้ยังไม่ทำระบบ Interaction
+                // จึงยังไม่ทำลายระบบเดิม
+                canBeShot = false;
+                requiresInteraction = true;
+                isHarmless = false;
+
+                break;
+
+
+            case AnomalyType.Harmless:
+
+                // Harmless = ไม่ต้องยิง
+                canBeShot = false;
+                requiresInteraction = false;
+                isHarmless = true;
+
+                break;
+        }
     }
 
 
@@ -72,9 +162,32 @@ public class AnomalyTarget : MonoBehaviour
 
     public void TakeDamage(int amount)
     {
+        // ==============================================
+        // ถ้าตายแล้ว ไม่รับ Damage ซ้ำ
+        // ==============================================
+
         if (isDead)
             return;
 
+
+        // ==============================================
+        // ถ้ายิงไม่ได้
+        // ==============================================
+
+        if (!canBeShot)
+        {
+            Debug.Log(
+                gameObject.name +
+                " → Anomaly ตัวนี้ไม่สามารถยิงได้!"
+            );
+
+            return;
+        }
+
+
+        // ==============================================
+        // ลด HP
+        // ==============================================
 
         health -= amount;
 
@@ -85,6 +198,10 @@ public class AnomalyTarget : MonoBehaviour
             health
         );
 
+
+        // ==============================================
+        // ตรวจสอบการตาย
+        // ==============================================
 
         if (health <= 0)
         {
@@ -146,8 +263,9 @@ public class AnomalyTarget : MonoBehaviour
 
         if (counterSystem == null)
         {
-            // เผื่อกรณีที่ Counter ถูกสร้าง/เปลี่ยน
+            // เผื่อกรณี Counter ถูกสร้าง/เปลี่ยน
             // หลังจาก Awake
+
             counterSystem =
                 FindFirstObjectByType<AnomalyCounter>();
         }
