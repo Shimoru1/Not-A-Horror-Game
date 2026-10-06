@@ -6837,8 +6837,15 @@ MonoBehaviour:
   roomNameText: {fileID: 1814627126}
   cameraWeapon: {fileID: 1547771252}
   cctvUI: {fileID: 718393747}
+  cleaningTargets:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  dirtOverlay: {fileID: 0}
   computerInteractionDistance: 2.5
-  computerInteractUI: {fileID: 1459311813}
+  eToUseUI: {fileID: 1459311813}
   blackScreen: {fileID: 1866258022}
   repairIcon: {fileID: 1429415688}
 --- !u!4 &1680803555

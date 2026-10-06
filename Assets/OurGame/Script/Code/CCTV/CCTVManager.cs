@@ -33,7 +33,10 @@ public class CCTVManager : MonoBehaviour
     [SerializeField]
     private float computerInteractionDistance = 2.5f;
 
-    [Header("Power Off Screen")]
+	[SerializeField]
+	private GameObject eToUseUI;
+
+	[Header("Power Off Screen")]
     public GameObject blackScreen;
 
     [Header("Repair UI")]
@@ -61,7 +64,10 @@ public class CCTVManager : MonoBehaviour
         if (cctvUI != null)
             cctvUI.SetActive(false);
 
-        LockMouse();
+		if (eToUseUI != null)
+			eToUseUI.SetActive(false);
+
+		LockMouse();
 
         GameObject playerObject =
             GameObject.FindGameObjectWithTag("Player");
@@ -91,8 +97,21 @@ public class CCTVManager : MonoBehaviour
 
         LockMouse();
 
-        // ENTER / EXIT CCTV
-        if (Input.GetKeyDown(KeyCode.E))
+		if (!isWatchingCCTV)
+		{
+			bool nearComputer = IsNearComputer();
+
+			if (eToUseUI != null)
+				eToUseUI.SetActive(nearComputer);
+		}
+		else
+		{
+			if (eToUseUI != null)
+				eToUseUI.SetActive(false);
+		}
+
+		// ENTER / EXIT CCTV
+		if (Input.GetKeyDown(KeyCode.E))
         {
             if (isWatchingCCTV)
             {
