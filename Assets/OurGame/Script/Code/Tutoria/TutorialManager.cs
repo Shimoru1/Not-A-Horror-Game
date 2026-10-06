@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+[DefaultExecutionOrder(10000)]
 public class TutorialManager : MonoBehaviour
 {
     [Header("Tutorial")]
@@ -24,14 +25,13 @@ public class TutorialManager : MonoBehaviour
 
         currentPage = 0;
 
-        // ปิดการควบคุม Player ตอน Tutorial เปิด
+        // ปิดการควบคุม Player
         SetPlayerControl(false);
 
-        // แสดงเมาส์
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
+        // เปิดเมาส์
+        UnlockMouse();
 
-        // ล้าง OnClick เดิม ป้องกันกดแล้วข้าม
+        // ล้างปุ่มเดิม
         nextButton.onClick.RemoveAllListeners();
         backButton.onClick.RemoveAllListeners();
         closeButton.onClick.RemoveAllListeners();
@@ -44,9 +44,33 @@ public class TutorialManager : MonoBehaviour
         UpdateTutorial();
     }
 
+    void Update()
+    {
+        if (tutorialPanel != null && tutorialPanel.activeSelf)
+        {
+            UnlockMouse();
+        }
+    }
+
+    void LateUpdate()
+    {
+        // สำคัญมาก
+        // ทำหลังจาก Camera / Player Script ทำงานเสร็จ
+        if (tutorialPanel != null && tutorialPanel.activeSelf)
+        {
+            UnlockMouse();
+        }
+    }
+
+    void UnlockMouse()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
     void UpdateTutorial()
     {
-        if (tutorialPages.Length == 0)
+        if (tutorialPages == null || tutorialPages.Length == 0)
             return;
 
         tutorialImage.sprite = tutorialPages[currentPage];
@@ -64,6 +88,8 @@ public class TutorialManager : MonoBehaviour
             currentPage++;
             UpdateTutorial();
         }
+
+        UnlockMouse();
     }
 
     public void PreviousPage()
@@ -73,18 +99,20 @@ public class TutorialManager : MonoBehaviour
             currentPage--;
             UpdateTutorial();
         }
+
+        UnlockMouse();
     }
 
     public void CloseTutorial()
     {
         tutorialPanel.SetActive(false);
 
-        // เปิดการควบคุม Player กลับมา
+        // เปิด Player กลับมา
         SetPlayerControl(true);
 
-        // ล็อกเมาส์กลับเข้าเกม
-        Cursor.visible = false;
+        // เข้าเกมจริง
         Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void SetPlayerControl(bool state)
