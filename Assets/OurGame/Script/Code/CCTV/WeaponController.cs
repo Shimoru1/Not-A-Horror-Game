@@ -42,6 +42,12 @@ public class WeaponController : MonoBehaviour
     [Header("UI References")]
     public TextMeshProUGUI ammoText;
 
+	[Header("Weapon Audio")]
+	[SerializeField] private AudioSource weaponAudioSource;
+
+	[SerializeField] private AudioClip shootSound;
+	[SerializeField] private AudioClip reloadSound;
+
     [Header("Ammo Game Over")]
     [Tooltip("ถ้ากระสุนของกล้องปัจจุบันหมดทั้ง Magazine และ Reserve ให้แพ้")]
     public bool ammoEmptyCausesGameOver = true;
@@ -52,7 +58,10 @@ public class WeaponController : MonoBehaviour
 
     private int currentCameraIndex = 0;
 
-    void Awake()
+
+	private bool isPaused = false;
+
+	void Awake()
     {
         // ถ้ายังไม่มีข้อมูล 5 กล้อง ให้สร้างให้ครบ
         if (cameraAmmo == null || cameraAmmo.Length != 5)
@@ -80,25 +89,59 @@ public class WeaponController : MonoBehaviour
         }
     }
 
-    void Update()
-    {
-        if (!canShoot)
-            return;
+	void Update()
+	{
+		// ==============================
+		// PAUSE
+		// ==============================
 
-        UpdateCurrentCameraIndex();
+		if (PauseMenu.Instance != null &&
+			PauseMenu.Instance.IsPaused)
+		{
+			return;
+		}
 
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            StartReload();
-        }
+		// ==============================
+		// GAME OVER / WIN
+		// ==============================
 
-        if (!isReloading && Input.GetMouseButtonDown(0))
-        {
-            Shoot();
-        }
-    }
+		if (GameManager.Instance != null &&
+			!GameManager.Instance.IsPlaying())
+		{
+			return;
+		}
 
-    public void EnableWeapon()
+		// ==============================
+		// WEAPON DISABLED
+		// ==============================
+
+		if (!canShoot)
+			return;
+
+		UpdateCurrentCameraIndex();
+
+		// ==============================
+		// RELOAD
+		// ==============================
+
+		if (Input.GetKeyDown(KeyCode.R))
+		{
+			StartReload();
+		}
+
+		// ==============================
+		// SHOOT
+		// ==============================
+
+		if (!isReloading &&
+			Input.GetMouseButtonDown(0))
+		{
+			Shoot();
+		}
+	}
+
+
+	public void EnableWeapon()
     {
         canShoot = true;
         UpdateCurrentCameraIndex();
@@ -139,8 +182,10 @@ public class WeaponController : MonoBehaviour
 
         UpdateAmmoUI();
 
-        // ตรวจว่ากระสุนหมดทั้ง Magazine + Reserve หรือไม่
-        CheckAmmoGameOver();
+		PlaySound(shootSound);
+
+		// ตรวจว่ากระสุนหมดทั้ง Magazine + Reserve หรือไม่
+		CheckAmmoGameOver();
 
         Debug.Log(
             "Bang! Camera " + (currentCameraIndex + 1) +
@@ -281,7 +326,8 @@ public class WeaponController : MonoBehaviour
             return;
         }
 
-        StartCoroutine(Reload());
+		PlaySound(reloadSound);
+		StartCoroutine(Reload());
     }
 
     IEnumerator Reload()
@@ -505,4 +551,23 @@ public class WeaponController : MonoBehaviour
         ammoText.text =
             ammo.magazineAmmo + "/" + ammo.reserveAmmo;
     }
+	public void SetPaused(bool paused)
+	{
+		isPaused = paused;
+
+		if (paused)
+		{
+			isReloading = false;
+		}
+	}
+	private void PlaySound(AudioClip clip)
+	{
+		if (clip == null)
+			return;
+
+		if (weaponAudioSource == null)
+			return;
+
+		weaponAudioSource.PlayOneShot(clip);
+	}
 }

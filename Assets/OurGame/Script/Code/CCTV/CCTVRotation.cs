@@ -2,95 +2,108 @@
 
 public class CCTVRotation : MonoBehaviour
 {
-    [Header("Mouse Sensitivity")]
-    public float mouseSensitivity = 2.5f;
+	[Header("Mouse Sensitivity")]
+	public float mouseSensitivity = 2.5f;
 
-    [Header("Rotation Limits")]
-    public float horizontalLimit = 80f;
-    public float verticalUpLimit = 45f;
-    public float verticalDownLimit = 45f;
+	[Header("Rotation Limits")]
+	public float horizontalLimit = 80f;
+	public float verticalUpLimit = 45f;
+	public float verticalDownLimit = 45f;
 
-    private float horizontalRotation = 0f;
-    private float verticalRotation = 0f;
+	private float horizontalRotation = 0f;
+	private float verticalRotation = 0f;
 
-    private Vector3 startRotation;
+	private Vector3 startRotation;
 
-    private void Awake()
-    {
-        startRotation = transform.localEulerAngles;
 
-        horizontalRotation = 0f;
-        verticalRotation = 0f;
-    }
+	private void Awake()
+	{
+		startRotation = transform.localEulerAngles;
 
-    private void OnEnable()
-    {
-        // รีเซ็ตมุมเมื่อเปิด CCTV
-        horizontalRotation = 0f;
-        verticalRotation = 0f;
+		horizontalRotation = 0f;
+		verticalRotation = 0f;
+	}
 
-        LockMouse();
-    }
 
-    private void OnDisable()
-    {
-        UnlockMouse();
-    }
+	private void OnEnable()
+	{
+		horizontalRotation = 0f;
+		verticalRotation = 0f;
 
-    private void Update()
-    {
-        // ทำงานเฉพาะตอนกล้องนี้กำลังเปิดอยู่
-        if (!gameObject.activeInHierarchy)
-            return;
+		// ไม่ Lock Mouse ที่นี่
+		// ให้ PauseMenu / CCTVManager เป็นคนจัดการ
+	}
 
-        RotateCamera();
-    }
 
-    private void RotateCamera()
-    {
-        float mouseX =
-            Input.GetAxis("MouseX") * mouseSensitivity;
+	private void OnDisable()
+	{
+		// ไม่ Unlock Mouse ที่นี่
+	}
 
-        float mouseY =
-            Input.GetAxis("MouseY") * mouseSensitivity;
 
-        // ซ้าย / ขวา
-        horizontalRotation += mouseX;
+	private void Update()
+	{
+		// ==============================
+		// PAUSE
+		// ==============================
 
-        horizontalRotation =
-            Mathf.Clamp(
-                horizontalRotation,
-                -horizontalLimit,
-                horizontalLimit
-            );
+		if (PauseMenu.Instance != null &&
+			PauseMenu.Instance.IsPaused)
+		{
+			return;
+		}
 
-        // ขึ้น / ลง
-        verticalRotation -= mouseY;
+		// ==============================
+		// GAME OVER / WIN
+		// ==============================
 
-        verticalRotation =
-            Mathf.Clamp(
-                verticalRotation,
-                -verticalUpLimit,
-                verticalDownLimit
-            );
+		if (GameManager.Instance != null &&
+			!GameManager.Instance.IsPlaying())
+		{
+			return;
+		}
 
-        transform.localRotation =
-            Quaternion.Euler(
-                startRotation.x + verticalRotation,
-                startRotation.y + horizontalRotation,
-                startRotation.z
-            );
-    }
+		if (!gameObject.activeInHierarchy)
+			return;
 
-    private void LockMouse()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
+		RotateCamera();
+	}
 
-    private void UnlockMouse()
-    {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
+
+	private void RotateCamera()
+	{
+		float mouseX =
+			Input.GetAxis("MouseX") * mouseSensitivity;
+
+		float mouseY =
+			Input.GetAxis("MouseY") * mouseSensitivity;
+
+
+		horizontalRotation += mouseX;
+
+		horizontalRotation =
+			Mathf.Clamp(
+				horizontalRotation,
+				-horizontalLimit,
+				horizontalLimit
+			);
+
+
+		verticalRotation -= mouseY;
+
+		verticalRotation =
+			Mathf.Clamp(
+				verticalRotation,
+				-verticalUpLimit,
+				verticalDownLimit
+			);
+
+
+		transform.localRotation =
+			Quaternion.Euler(
+				startRotation.x + verticalRotation,
+				startRotation.y + horizontalRotation,
+				startRotation.z
+			);
+	}
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class CCTVManager : MonoBehaviour
 {
-    [Header("CCTV Settings")]
+	[Header("CCTV Settings")]
     public bool isWatchingCCTV = false;
 
     [Header("CCTV Cameras")]
@@ -29,6 +29,7 @@ public class CCTVManager : MonoBehaviour
     [Header("Computer Interaction")]
     [Tooltip("ต้องอยู่ใกล้ Computer ภายในระยะนี้จึงจะกด E เพื่อเข้า CCTV ได้")]
     [SerializeField] private float computerInteractionDistance = 2.5f;
+	[SerializeField] private GameObject computerInteractUI;
 
 	[Header("Power Off Screen")]
 	public GameObject blackScreen;
@@ -79,17 +80,46 @@ public class CCTVManager : MonoBehaviour
 
 	private void Update()
 	{
+		// ==============================
+		// PAUSE
+		// ==============================
+
+		if (PauseMenu.Instance != null &&
+			PauseMenu.Instance.IsPaused)
+		{
+			return;
+		}
+
+		// ==============================
+		// GAME OVER / WIN
+		// ==============================
+
 		if (GameManager.Instance != null &&
 			!GameManager.Instance.IsPlaying())
 		{
 			return;
 		}
 
-		LockMouse();
-
 		// =====================================================
 		// กด E เพื่อเข้า / ออกจาก CCTV
 		// =====================================================
+		if (!isWatchingCCTV)
+		{
+			bool nearComputer = IsNearComputer();
+
+			if (computerInteractUI != null)
+			{
+				computerInteractUI.SetActive(nearComputer);
+			}
+		}
+		else
+		{
+			// ตอนอยู่ใน CCTV ไม่ต้องแสดง UI E to use
+			if (computerInteractUI != null)
+			{
+				computerInteractUI.SetActive(false);
+			}
+		}
 
 		if (Input.GetKeyDown(KeyCode.E))
 		{
@@ -135,13 +165,19 @@ public class CCTVManager : MonoBehaviour
 
 
 	private void LockMouse()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
+	{
+		if (PauseMenu.Instance != null &&
+			PauseMenu.Instance.IsPaused)
+		{
+			return;
+		}
+
+		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.visible = false;
+	}
 
 
-    private void ToggleCCTV()
+	private void ToggleCCTV()
     {
         if (isWatchingCCTV)
         {

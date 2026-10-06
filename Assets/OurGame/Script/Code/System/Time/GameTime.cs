@@ -106,31 +106,31 @@ public class GameTime : MonoBehaviour
     }
 
 
-    // ==========================================
-    // WIN
-    // ==========================================
+	// ==========================================
+	// WIN
+	// ==========================================
 
-    private void WinGame()
-    {
-        gameEnded = true;
+	private void WinGame()
+	{
+		gameEnded = true;
 
 		Debug.Log("================================");
-        Debug.Log("YOU WIN!");
-        Debug.Log("Game Time Reached: " + GetGameTime());
-        Debug.Log("================================");
+		Debug.Log("YOU WIN!");
+		Debug.Log("Game Time Reached: " + GetGameTime());
+		Debug.Log("================================");
 
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.WinGame();
-        }
-    }
+		if (GameManager.Instance != null)
+		{
+			GameManager.Instance.WinGame();
+		}
+	}
 
 
-    // ==========================================
-    // STOP TIME
-    // ==========================================
+	// ==========================================
+	// STOP TIME
+	// ==========================================
 
-    public void StopTime()
+	public void StopTime()
     {
         gameEnded = true;
 

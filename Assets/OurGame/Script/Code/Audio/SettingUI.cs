@@ -3,45 +3,60 @@ using UnityEngine.UI;
 
 public class SettingUI : MonoBehaviour
 {
-    private ButtonManager buttonManager;
 	[Header("Settings")]
 	[SerializeField] private GameObject settingsPanel;
 	[SerializeField] private Slider volumeSlider;
 
 	private void Start()
 	{
-		buttonManager = GetComponent<ButtonManager>();
-		settingsPanel.SetActive(false);
+		if (settingsPanel != null)
+			settingsPanel.SetActive(false);
 
-		volumeSlider.minValue = 0f;
-		volumeSlider.maxValue = 1f;
+		if (volumeSlider != null)
+		{
+			volumeSlider.minValue = 0f;
+			volumeSlider.maxValue = 1f;
 
-		volumeSlider.value = AudioManager.Instance.GetVolume();
+			// ดึงค่าที่บันทึกไว้
+			volumeSlider.value = AudioManager.Instance.GetMusicVolume();
 
-		volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
+			volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
+		}
 	}
 
 	public void OpenSettings()
 	{
-		settingsPanel.SetActive(true);
-		buttonManager.OnPlayClick();
+		if (settingsPanel != null)
+			settingsPanel.SetActive(true);
 
-		volumeSlider.value = AudioManager.Instance.GetVolume();
+		// ดึงค่าล่าสุดอีกครั้ง
+		if (volumeSlider != null)
+		{
+			volumeSlider.SetValueWithoutNotify(
+				AudioManager.Instance.GetMusicVolume()
+			);
+		}
 	}
 
 	public void CloseSettings()
 	{
-		settingsPanel.SetActive(false);
-		buttonManager.ShowButtonsImmediately();
+		if (settingsPanel != null)
+			settingsPanel.SetActive(false);
 	}
 
 	private void OnVolumeChanged(float value)
 	{
-		AudioManager.Instance.SetVolume(value);
+		if (AudioManager.Instance != null)
+		{
+			AudioManager.Instance.SetMusicVolume(value);
+		}
 	}
 
 	private void OnDestroy()
 	{
-		volumeSlider.onValueChanged.RemoveListener(OnVolumeChanged);
+		if (volumeSlider != null)
+		{
+			volumeSlider.onValueChanged.RemoveListener(OnVolumeChanged);
+		}
 	}
 }

@@ -5,6 +5,9 @@ public class DoorController : MonoBehaviour
 	public float openAngle = 90f;
 	public float openSpeed = 3f;
 
+	[Header("UI")]
+	public GameObject interactUI;
+
 	private bool isOpen = false;
 	private bool playerNearby = false;
 
@@ -15,10 +18,20 @@ public class DoorController : MonoBehaviour
 	{
 		closedRotation = transform.localRotation;
 		openRotation = closedRotation * Quaternion.Euler(0f, 0f, openAngle);
+
+		if (interactUI != null)
+		{
+			interactUI.SetActive(false);
+		}
 	}
 
 	void Update()
 	{
+		if (interactUI != null)
+		{
+			interactUI.SetActive(playerNearby);
+		}
+
 		if (playerNearby && Input.GetKeyDown(KeyCode.F))
 		{
 			isOpen = !isOpen;

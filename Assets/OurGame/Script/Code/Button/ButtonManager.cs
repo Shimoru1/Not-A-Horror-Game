@@ -25,6 +25,9 @@ public class ButtonManager : MonoBehaviour
 	[Header("Music")]
 	[SerializeField] private AudioSource menuMusic;
 
+	[Header("Button Sound")]
+	[SerializeField] private AudioSource buttonClickAudio;
+
 	[Header("Stage Select")]
 	public GameObject stageSelect;
 	public Button nextStage;
@@ -197,11 +200,13 @@ public class ButtonManager : MonoBehaviour
 	}
 	public void OnPlayClick()
 	{
+		PlayButtonSound();
 		HideRemainingButtons();
 	}
 
 	public void Play()
 	{
+		PlayButtonSound();
 		OnPlayClick();
 		logo.gameObject.SetActive(false);
 		Bg.gameObject.SetActive(true);
@@ -224,6 +229,7 @@ public class ButtonManager : MonoBehaviour
 
 	public void Back()
 	{
+		PlayButtonSound();
 		logo.gameObject.SetActive(true);
 		Bg.gameObject.SetActive(false);
 
@@ -251,6 +257,7 @@ public class ButtonManager : MonoBehaviour
 
 	public void NextStage()
 	{
+		PlayButtonSound();
 		if (isChangingStage)
 			return;
 
@@ -265,6 +272,7 @@ public class ButtonManager : MonoBehaviour
 	}
 	public void PreviousStage()
 	{
+		PlayButtonSound();
 		if (isChangingStage)
 			return;
 
@@ -391,11 +399,6 @@ public class ButtonManager : MonoBehaviour
 		nextStage.interactable = false;
 		previousStage.interactable = false;
 
-		if (menuMusic != null)
-		{
-			menuMusic.Stop();
-		}
-
 		if (TransitionManager.Instance == null)
 		{
 			Debug.LogError("No TransitionManager!");
@@ -405,8 +408,19 @@ public class ButtonManager : MonoBehaviour
 		TransitionManager.Instance.StartLoadScene(sceneToLoad);
 	}
 
+
+
 	public void Quit()
 	{
+		PlayButtonSound();
 		Application.Quit();
 	}
+	private void PlayButtonSound()
+	{
+		if (buttonClickAudio != null)
+		{
+			buttonClickAudio.Play();
+		}
+	}
+
 }
