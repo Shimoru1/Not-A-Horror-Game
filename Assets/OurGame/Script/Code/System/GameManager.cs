@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -6,6 +7,7 @@ public class GameManager : MonoBehaviour
 
 	public enum GameState
 	{
+		Starting,
 		Playing,
 		Paused,
 		Win,
@@ -21,15 +23,32 @@ public class GameManager : MonoBehaviour
 
 	[Header("GAME STATE")]
 	[SerializeField]
-	private GameState currentState = GameState.Playing;
+	private GameState currentState = GameState.Starting;
 
 	[Header("GAME OVER REASON")]
 	[SerializeField]
 	private GameOverReason gameOverReason = GameOverReason.None;
 
+	[Header("GAME START")]
+	[Tooltip("เวลารอก่อนเริ่มเกม")]
+	[SerializeField] private float gameStartDelay = 60f;
+
+	[Tooltip("เริ่มแสดงข้อความก่อนเกมเริ่มกี่วินาที")]
+	[SerializeField] private float warningTime = 5f;
+
+	[Tooltip("ติ๊กเพื่อข้ามเวลารอ 1 นาทีสำหรับการ Test")]
+	[SerializeField] private bool isTest = false;
+
+	[Tooltip("Text ที่แสดงตอนใกล้เริ่มเกม")]
+	[SerializeField] private TextMeshProUGUI startText;
+
+	[Header("START TEXT FADE")]
+	[SerializeField] private CanvasGroup startTextCanvasGroup;
+	[SerializeField] private float fadeInDuration = 1f;
+	[SerializeField] private float fadeOutDuration = 1f;
+
 	[Header("TEST")]
 	public bool showDebugLog = true;
-
 
 	// =========================================================
 	// AWAKE
@@ -48,6 +67,174 @@ public class GameManager : MonoBehaviour
 		Time.timeScale = 1f;
 	}
 
+	// =========================================================
+	// START
+	// =========================================================
+
+	private void Start()
+	{
+		// ซ่อน Text ก่อน
+		if (startText != null)
+		{
+			startText.gameObject.SetActive(false);
+		}
+
+		// =====================================================
+		// TEST MODE
+		// =====================================================
+
+		if (isTest)
+		{
+			StartGameImmediately();
+			return;
+		}
+
+		// =====================================================
+		// NORMAL MODE
+		// =====================================================
+
+		currentState = GameState.Starting;
+
+		StartCoroutine(GameStartCountdown());
+	}
+
+	// =========================================================
+	// GAME START COUNTDOWN
+	// =========================================================
+
+	private System.Collections.IEnumerator GameStartCountdown()
+	{
+		float remainingTime = gameStartDelay;
+
+		// ซ่อน Text ตอนเริ่ม
+		if (startText != null)
+		{
+			startText.gameObject.SetActive(false);
+		}
+
+		if (startTextCanvasGroup != null)
+		{
+			startTextCanvasGroup.alpha = 0f;
+		}
+
+		if (showDebugLog)
+		{
+			Debug.Log("GAME STARTING...");
+			Debug.Log("Game will start in " + gameStartDelay + " seconds.");
+		}
+
+		// =====================================================
+		// รอจนเหลือ 5 วินาที
+		// =====================================================
+
+		while (remainingTime > warningTime)
+		{
+			remainingTime -= Time.deltaTime;
+			yield return null;
+		}
+
+		// =====================================================
+		// แสดง Text
+		// =====================================================
+
+		if (startText != null)
+		{
+			startText.gameObject.SetActive(true);
+			startText.text = "Wait.. what was that..";
+		}
+
+		// =====================================================
+		// FADE IN
+		// =====================================================
+
+		if (startTextCanvasGroup != null)
+		{
+			float timer = 0f;
+
+			while (timer < fadeInDuration)
+			{
+				timer += Time.deltaTime;
+
+				startTextCanvasGroup.alpha =
+					Mathf.Clamp01(timer / fadeInDuration);
+
+				yield return null;
+			}
+
+			startTextCanvasGroup.alpha = 1f;
+		}
+
+		// =====================================================
+		// รอจนถึงเวลาเริ่มเกม
+		// =====================================================
+
+		while (remainingTime > 0f)
+		{
+			remainingTime -= Time.deltaTime;
+			yield return null;
+		}
+
+		// =====================================================
+		// FADE OUT
+		// =====================================================
+
+		if (startTextCanvasGroup != null)
+		{
+			float timer = 0f;
+			float startAlpha = startTextCanvasGroup.alpha;
+
+			while (timer < fadeOutDuration)
+			{
+				timer += Time.deltaTime;
+
+				startTextCanvasGroup.alpha =
+					Mathf.Lerp(
+						startAlpha,
+						0f,
+						timer / fadeOutDuration
+					);
+
+				yield return null;
+			}
+
+			startTextCanvasGroup.alpha = 0f;
+		}
+
+		// =====================================================
+		// เริ่มเกม
+		// =====================================================
+
+		StartGameImmediately();
+	}
+
+	// =========================================================
+	// START GAME
+	// =========================================================
+
+	private void StartGameImmediately()
+	{
+		currentState = GameState.Playing;
+
+		Time.timeScale = 1f;
+
+		if (startText != null)
+		{
+			startText.gameObject.SetActive(false);
+		}
+
+		if (startTextCanvasGroup != null)
+		{
+			startTextCanvasGroup.alpha = 0f;
+		}
+
+		if (showDebugLog)
+		{
+			Debug.Log("================================");
+			Debug.Log("GAME STARTED!");
+			Debug.Log("ALL GAME SYSTEMS ARE ACTIVE!");
+			Debug.Log("================================");
+		}
+	}
 
 	// =========================================================
 	// PAUSE
@@ -55,7 +242,6 @@ public class GameManager : MonoBehaviour
 
 	public void PauseGame()
 	{
-		// Pause ได้เฉพาะตอนกำลังเล่น
 		if (currentState != GameState.Playing)
 			return;
 
@@ -71,14 +257,12 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
-
 	// =========================================================
 	// RESUME
 	// =========================================================
 
 	public void ResumeGame()
 	{
-		// Resume ได้เฉพาะตอน Pause
 		if (currentState != GameState.Paused)
 			return;
 
@@ -92,11 +276,9 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
-
 	// =========================================================
 	// WIN
 	// =========================================================
-
 	public void WinGame()
 	{
 		if (currentState != GameState.Playing)
@@ -116,7 +298,6 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
-
 	// =========================================================
 	// GAME OVER
 	// =========================================================
@@ -125,7 +306,6 @@ public class GameManager : MonoBehaviour
 	{
 		GameOver(GameOverReason.TooManyAnomalies);
 	}
-
 
 	// =========================================================
 	// GAME OVER WITH REASON
@@ -151,7 +331,6 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
-
 	// =========================================================
 	// STOP GAME
 	// =========================================================
@@ -163,7 +342,6 @@ public class GameManager : MonoBehaviour
 		UnlockMouse();
 	}
 
-
 	// =========================================================
 	// GET GAME STATE
 	// =========================================================
@@ -172,7 +350,6 @@ public class GameManager : MonoBehaviour
 	{
 		return currentState;
 	}
-
 
 	// =========================================================
 	// CHECK PLAYING
@@ -183,6 +360,14 @@ public class GameManager : MonoBehaviour
 		return currentState == GameState.Playing;
 	}
 
+	// =========================================================
+	// CHECK STARTING
+	// =========================================================
+
+	public bool IsStarting()
+	{
+		return currentState == GameState.Starting;
+	}
 
 	// =========================================================
 	// CHECK PAUSED
@@ -193,7 +378,6 @@ public class GameManager : MonoBehaviour
 		return currentState == GameState.Paused;
 	}
 
-
 	// =========================================================
 	// CHECK WIN
 	// =========================================================
@@ -202,7 +386,6 @@ public class GameManager : MonoBehaviour
 	{
 		return currentState == GameState.Win;
 	}
-
 
 	// =========================================================
 	// CHECK GAME OVER
@@ -213,7 +396,6 @@ public class GameManager : MonoBehaviour
 		return currentState == GameState.GameOver;
 	}
 
-
 	// =========================================================
 	// GET GAME OVER REASON
 	// =========================================================
@@ -222,7 +404,6 @@ public class GameManager : MonoBehaviour
 	{
 		return gameOverReason;
 	}
-
 
 	// =========================================================
 	// MOUSE
@@ -233,7 +414,6 @@ public class GameManager : MonoBehaviour
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
 	}
-
 
 	public void LockMouse()
 	{
