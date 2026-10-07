@@ -18,29 +18,36 @@ public class RepairIndicator : MonoBehaviour
 				target.position
 			);
 
-		// เป้าหมายอยู่ด้านหลัง
-		if (screenPos.z < 0)
+		if (screenPos.z < 0f)
 		{
-			screenPos.x =
-				Screen.width - screenPos.x;
+			// อยู่ด้านหลัง: ดูว่าอยู่ซ้ายหรือขวาของกล้อง
+			Vector3 local =
+				playerCamera.transform.InverseTransformPoint(
+					target.position
+				);
 
-			screenPos.y =
-				Screen.height - screenPos.y;
+			// ติดขอบซ้าย/ขวาทันที (หันหลังตรง ๆ แล้ววาปข้าม)
+			screenPos.x = local.x >= 0f
+				? Screen.width - screenEdgePadding
+				: screenEdgePadding;
+
+			// ความสูงตาม station (กลับด้านเพราะอยู่หลังกล้อง)
+			screenPos.y = Screen.height - screenPos.y;
 		}
 
-		screenPos.x =
-			Mathf.Clamp(
-				screenPos.x,
-				screenEdgePadding,
-				Screen.width - screenEdgePadding
-			);
+		screenPos.x = Mathf.Clamp(
+			screenPos.x,
+			screenEdgePadding,
+			Screen.width - screenEdgePadding
+		);
 
-		screenPos.y =
-			Mathf.Clamp(
-				screenPos.y,
-				screenEdgePadding,
-				Screen.height - screenEdgePadding
-			);
+		screenPos.y = Mathf.Clamp(
+			screenPos.y,
+			screenEdgePadding,
+			Screen.height - screenEdgePadding
+		);
+
+		screenPos.z = 0f;
 
 		transform.position = screenPos;
 	}
