@@ -75,7 +75,6 @@ public class PowerManager : MonoBehaviour
 
 	private bool isRepairing = false;
 
-
 	// =========================================================
 	// AWAKE
 	// =========================================================
@@ -85,7 +84,6 @@ public class PowerManager : MonoBehaviour
 		Instance = this;
 	}
 
-
 	// =========================================================
 	// START
 	// =========================================================
@@ -94,20 +92,7 @@ public class PowerManager : MonoBehaviour
 	{
 		IsPowerOff = false;
 
-		if (powerUI != null)
-		{
-			powerUI.SetActive(false);
-		}
-
-		if (repairIcon != null)
-		{
-			repairIcon.SetActive(false);
-		}
-
-		if (repairUI != null)
-		{
-			repairUI.SetActive(false);
-		}
+		HideAllRepairUI();
 
 		if (powerOffVignette != null)
 		{
@@ -116,8 +101,6 @@ public class PowerManager : MonoBehaviour
 
 		UpdatePowerUI();
 	}
-
-
 
 	// =========================================================
 	// UPDATE
@@ -131,13 +114,12 @@ public class PowerManager : MonoBehaviour
 			return;
 		}
 
-		if (!IsPowerOff)
+		HandleRepair();
+
+		if (!isRepairing && !IsPowerOff)
 		{
 			DrainPower();
 		}
-
-		// สามารถซ่อมได้ทั้งตอนเปิดและตอนดับ
-		HandleRepair();
 
 		UpdatePowerTextPosition();
 		UpdatePowerUI();
@@ -161,7 +143,6 @@ public class PowerManager : MonoBehaviour
 		}
 	}
 
-
 	// =========================================================
 	// POWER OFF
 	// =========================================================
@@ -179,13 +160,11 @@ public class PowerManager : MonoBehaviour
 
 		DisablePowerObjects();
 
-		// เสียงไฟดับ
 		if (powerOffAudio != null)
 		{
 			powerOffAudio.Play();
 		}
 
-		// RepairStation ต้องอยู่ในฉาก
 		if (repairStation != null)
 		{
 			repairStation.SetActive(true);
@@ -196,16 +175,13 @@ public class PowerManager : MonoBehaviour
 			powerOffVignette.SetActive(true);
 		}
 
-		// PowerUI จะถูกเปิดเฉพาะเมื่ออยู่ใกล้ Station
-		UpdatePowerUI();
-
-		// แจ้ง CCTV
 		if (CCTVManager.Instance != null)
 		{
 			CCTVManager.Instance.OnPowerOff();
 		}
-	}
 
+		UpdatePowerUI();
+	}
 
 	// =========================================================
 	// TURN OFF LIGHTS
@@ -238,7 +214,6 @@ public class PowerManager : MonoBehaviour
 		}
 	}
 
-
 	// =========================================================
 	// REPAIR
 	// =========================================================
@@ -248,8 +223,14 @@ public class PowerManager : MonoBehaviour
 		if (player == null ||
 			repairStation == null)
 		{
+			isRepairing = false;
 			return;
 		}
+
+
+		// =====================================================
+		// ตรวจระยะ
+		// =====================================================
 
 		float distance = Vector3.Distance(
 			player.position,
@@ -261,7 +242,7 @@ public class PowerManager : MonoBehaviour
 
 
 		// =====================================================
-		// อยู่ใกล้ + กด E ค้าง + Power ยังไม่เต็ม
+		// ต้องอยู่ใกล้ + กด E + Power ยังไม่เต็ม
 		// =====================================================
 
 		if (nearRepairStation &&
@@ -270,7 +251,11 @@ public class PowerManager : MonoBehaviour
 		{
 			isRepairing = true;
 
-			// เพิ่ม %
+
+			// =================================================
+			// เพิ่ม Power
+			// =================================================
+
 			powerPercent +=
 				repairSpeed * Time.deltaTime;
 
@@ -281,7 +266,10 @@ public class PowerManager : MonoBehaviour
 			);
 
 
+			// =================================================
 			// เสียงซ่อม
+			// =================================================
+
 			if (repairAudio != null &&
 				!repairAudio.isPlaying)
 			{
@@ -289,19 +277,23 @@ public class PowerManager : MonoBehaviour
 			}
 
 
-			// ถ้าซ่อมจนเต็ม
+			// =================================================
+			// ซ่อมเต็ม
+			// =================================================
+
 			if (powerPercent >= repairRequiredPercent)
 			{
-				powerPercent = repairRequiredPercent;
+				powerPercent =
+					repairRequiredPercent;
 
-				// ถ้าไฟดับอยู่ ให้เปิดไฟกลับ
+				// ถ้าไฟดับ → เปิดไฟกลับ
 				if (IsPowerOff)
 				{
 					PowerRestored();
 				}
 				else
 				{
-					// ไฟยังไม่ดับ แค่ซ่อมจนเต็ม
+					// ไฟยังไม่ดับ แค่ซ่อมเต็ม
 					isRepairing = false;
 
 					if (repairAudio != null)
@@ -315,7 +307,11 @@ public class PowerManager : MonoBehaviour
 		{
 			isRepairing = false;
 
+
+			// =================================================
 			// หยุดเสียงซ่อม
+			// =================================================
+
 			if (repairAudio != null &&
 				repairAudio.isPlaying)
 			{
@@ -323,7 +319,6 @@ public class PowerManager : MonoBehaviour
 			}
 		}
 	}
-
 
 
 	// =========================================================
@@ -340,31 +335,16 @@ public class PowerManager : MonoBehaviour
 
 		isRepairing = false;
 
-		// เปิดไฟกลับ
 		EnablePowerObjects();
 
-		// หยุดเสียงซ่อม
 		if (repairAudio != null)
 		{
 			repairAudio.Stop();
 		}
 
-		// เสียงไฟกลับมา
 		if (powerOnAudio != null)
 		{
 			powerOnAudio.Play();
-		}
-
-		// ซ่อน Power %
-		if (powerUI != null)
-		{
-			powerUI.SetActive(false);
-		}
-
-		// ซ่อนไอคอน
-		if (repairIcon != null)
-		{
-			repairIcon.SetActive(false);
 		}
 
 		if (powerOffVignette != null)
@@ -372,7 +352,6 @@ public class PowerManager : MonoBehaviour
 			powerOffVignette.SetActive(false);
 		}
 
-		// แจ้ง CCTV
 		if (CCTVManager.Instance != null)
 		{
 			CCTVManager.Instance.OnPowerRestored();
@@ -416,41 +395,26 @@ public class PowerManager : MonoBehaviour
 
 	private void UpdatePowerUI()
 	{
-		if (powerUI == null)
-			return;
+		// =====================================================
+		// ตรวจ Reference
+		// =====================================================
 
 		if (player == null || repairStation == null)
 		{
-			powerUI.SetActive(false);
-
-			if (repairIcon != null)
-				repairIcon.SetActive(false);
-
-			if (repairUI != null)
-				repairUI.SetActive(false);
-
+			HideAllRepairUI();
 			return;
 		}
 
-
 		// =====================================================
-		// อยู่ใน CCTV
+		// CCTV
 		// =====================================================
 
 		if (CCTVManager.Instance != null &&
 			CCTVManager.Instance.isWatchingCCTV)
 		{
-			powerUI.SetActive(false);
-
-			if (repairIcon != null)
-				repairIcon.SetActive(false);
-
-			if (repairUI != null)
-				repairUI.SetActive(false);
-
+			HideAllRepairUI();
 			return;
 		}
-
 
 		// =====================================================
 		// ตรวจระยะ
@@ -464,70 +428,61 @@ public class PowerManager : MonoBehaviour
 		bool nearRepairStation =
 			distance <= repairDistance;
 
-
 		// =====================================================
 		// POWER %
 		// =====================================================
 
-		if (nearRepairStation)
+		bool showPowerUI =
+			nearRepairStation;
+
+		if (powerUI != null)
 		{
-			powerUI.SetActive(true);
+			powerUI.SetActive(showPowerUI);
+		}
 
-			if (powerText != null)
+		// สำคัญมาก!
+		// สั่ง powerText โดยตรงด้วย
+		if (powerText != null)
+		{
+			powerText.gameObject.SetActive(showPowerUI);
+
+			if (showPowerUI)
 			{
-				powerText.gameObject.SetActive(true);
-
 				powerText.text =
 					Mathf.CeilToInt(powerPercent) + "%";
 
 				UpdatePowerTextColor();
 			}
 		}
-		else
-		{
-			powerUI.SetActive(false);
-		}
-
 
 		// =====================================================
 		// REPAIR E UI
 		// =====================================================
 
+		bool showRepairUI =
+			nearRepairStation &&
+			powerPercent < repairRequiredPercent;
+
+
 		if (repairUI != null)
 		{
-			// แสดง E เมื่ออยู่ใกล้
-			// และ Power ยังไม่เต็ม
-			if (nearRepairStation &&
-				powerPercent < repairRequiredPercent)
-			{
-				repairUI.SetActive(true);
-			}
-			else
-			{
-				repairUI.SetActive(false);
-			}
+			repairUI.SetActive(showRepairUI);
 		}
-
 
 		// =====================================================
 		// REPAIR ICON
 		// =====================================================
 
+		bool showRepairIcon =
+			IsPowerOff &&
+			!nearRepairStation;
+
+
 		if (repairIcon != null)
 		{
-			// ถ้าไฟดับ + อยู่นอกระยะ
-			if (IsPowerOff && !nearRepairStation)
-			{
-				repairIcon.SetActive(true);
-			}
-			else
-			{
-				repairIcon.SetActive(false);
-			}
+			repairIcon.SetActive(showRepairIcon);
 		}
 	}
-
-
 
 	private void UpdatePowerTextColor()
 	{
@@ -548,19 +503,39 @@ public class PowerManager : MonoBehaviour
 	}
 	private void UpdatePowerTextPosition()
 	{
-		if (powerText == null || repairStation == null)
+		if (powerText == null ||
+			repairStation == null ||
+			playerCamera == null)
 			return;
 
-		if (playerCamera == null)
-			return;
-
-		// ใช้ Pivot ของ RepairStation
 		Vector3 screenPosition =
 			playerCamera.WorldToScreenPoint(
 				repairStation.transform.position
 			);
 
-		powerText.transform.position = screenPosition;
+		powerText.transform.position =
+			screenPosition + (Vector3)powerTextOffset;
 	}
+	private void HideAllRepairUI()
+	{
+		if (powerUI != null)
+		{
+			powerUI.SetActive(false);
+		}
 
+		if (powerText != null)
+		{
+			powerText.gameObject.SetActive(false);
+		}
+
+		if (repairUI != null)
+		{
+			repairUI.SetActive(false);
+		}
+
+		if (repairIcon != null)
+		{
+			repairIcon.SetActive(false);
+		}
+	}
 }

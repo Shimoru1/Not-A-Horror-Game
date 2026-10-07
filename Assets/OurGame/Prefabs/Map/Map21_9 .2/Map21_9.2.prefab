@@ -2393,7 +2393,7 @@ Transform:
   - {fileID: 724759132233535166}
   - {fileID: 3225815494825582390}
   - {fileID: 5063729838645772622}
-  - {fileID: 8020614742303419067}
+  - {fileID: 7223440657496544823}
   m_Father: {fileID: 6308053052065523986}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!64 &330425883953197567
@@ -8302,6 +8302,38 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 6451488395274692970, guid: 2d886ea7c6653c84fa4b21f3a970a49c, type: 3}
+--- !u!1 &6047544742492195085
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7223440657496544823}
+  m_Layer: 3
+  m_Name: Pivot electic box
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7223440657496544823
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6047544742492195085}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 6.61, y: 0.55, z: 23.03}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8020614742303419067}
+  m_Father: {fileID: 1237949953103185609}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6058571185911938345
 GameObject:
   m_ObjectHideFlags: 0
@@ -9091,11 +9123,11 @@ Transform:
   m_GameObject: {fileID: 6651254974552483089}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: -15.94134, y: -1, z: 14.13994}
+  m_LocalPosition: {x: -22.55134, y: -1.55, z: -8.89006}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1237949953103185609}
+  m_Father: {fileID: 7223440657496544823}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6893518693902843123
 MeshFilter:
