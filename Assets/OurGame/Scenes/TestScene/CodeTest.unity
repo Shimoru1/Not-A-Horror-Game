@@ -1012,6 +1012,78 @@ MonoBehaviour:
   mouseSensitivity: 2.5
   lookUpLimit: 80
   lookDownLimit: 80
+--- !u!1 &391283079
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 391283080}
+  - component: {fileID: 391283082}
+  - component: {fileID: 391283081}
+  m_Layer: 0
+  m_Name: Dirt3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &391283080
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 391283079}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 26.48674, y: 26.48674, z: 26.48674}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 761529400}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 980, y: 498}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &391283081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 391283079}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.3660378, g: 0.21202566, b: 0.21202566, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 2800000, guid: 75c614ecb92204b46868c1397afeb745, type: 3}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &391283082
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 391283079}
+  m_CullTransparentMesh: 1
 --- !u!1001 &391877200
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2041,6 +2113,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 761529400}
   - {fileID: 2142761716}
   - {fileID: 1139940998}
   - {fileID: 286593854}
@@ -2054,11 +2127,141 @@ Transform:
   - {fileID: 1079233570}
   m_Father: {fileID: 1679262818}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &722825302
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 722825303}
+  - component: {fileID: 722825305}
+  - component: {fileID: 722825304}
+  m_Layer: 0
+  m_Name: Dirt2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &722825303
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 722825302}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 26.48674, y: 26.48674, z: 26.48674}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 761529400}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 980, y: 498}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &722825304
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 722825302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.3660378, g: 0.21202566, b: 0.21202566, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 2800000, guid: 75c614ecb92204b46868c1397afeb745, type: 3}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &722825305
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 722825302}
+  m_CullTransparentMesh: 1
 --- !u!108 &740960824 stripped
 Light:
   m_CorrespondingSourceObject: {fileID: 4017175113417052906, guid: 2dbb1b2af7dac0a429ed3da5c8ab957c, type: 3}
   m_PrefabInstance: {fileID: 1867269709}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &761529399
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 761529400}
+  - component: {fileID: 761529401}
+  m_Layer: 0
+  m_Name: DirtOverlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &761529400
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 761529399}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 935089235}
+  - {fileID: 722825303}
+  - {fileID: 391283080}
+  - {fileID: 1444140514}
+  - {fileID: 1057435142}
+  m_Father: {fileID: 718393748}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &761529401
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 761529399}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14a07905a54be4a4babb0edc10c8302b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CCTVDirtOverlay
+  dirtImages:
+  - {fileID: 935089236}
+  - {fileID: 722825304}
+  - {fileID: 391283081}
+  - {fileID: 1444140515}
+  - {fileID: 1057435143}
+  currentCamera: {fileID: 0}
+  maxAlpha: 1
+  fadeSpeed: 2
 --- !u!1 &762983838
 GameObject:
   m_ObjectHideFlags: 0
@@ -2381,6 +2584,7 @@ GameObject:
   - component: {fileID: 833814082}
   - component: {fileID: 833814080}
   - component: {fileID: 833814084}
+  - component: {fileID: 833814085}
   m_Layer: 0
   m_Name: '4_CCTV_Cam '
   m_TagString: Untagged
@@ -2515,6 +2719,18 @@ MonoBehaviour:
   horizontalLimit: 80
   verticalUpLimit: 45
   verticalDownLimit: 45
+--- !u!114 &833814085
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 833814079}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af61b86025f77ad41a9407cf7b16fef8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CCTVCleaningTarget
 --- !u!1 &843846772
 GameObject:
   m_ObjectHideFlags: 0
@@ -3093,6 +3309,78 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 903218126}
   m_CullTransparentMesh: 1
+--- !u!1 &935089234
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 935089235}
+  - component: {fileID: 935089237}
+  - component: {fileID: 935089236}
+  m_Layer: 0
+  m_Name: Dirt1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &935089235
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935089234}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 26.48674, y: 26.48674, z: 26.48674}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 761529400}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 980, y: 498}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &935089236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935089234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.3660378, g: 0.21202566, b: 0.21202566, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 2800000, guid: 75c614ecb92204b46868c1397afeb745, type: 3}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &935089237
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935089234}
+  m_CullTransparentMesh: 1
 --- !u!1 &967945756
 GameObject:
   m_ObjectHideFlags: 0
@@ -3264,6 +3552,7 @@ GameObject:
   - component: {fileID: 1029748431}
   - component: {fileID: 1029748429}
   - component: {fileID: 1029748433}
+  - component: {fileID: 1029748434}
   m_Layer: 0
   m_Name: '3_CCTV_Cam '
   m_TagString: Untagged
@@ -3398,6 +3687,90 @@ MonoBehaviour:
   horizontalLimit: 80
   verticalUpLimit: 45
   verticalDownLimit: 45
+--- !u!114 &1029748434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1029748428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af61b86025f77ad41a9407cf7b16fef8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CCTVCleaningTarget
+--- !u!1 &1057435141
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1057435142}
+  - component: {fileID: 1057435144}
+  - component: {fileID: 1057435143}
+  m_Layer: 0
+  m_Name: Dirt5
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &1057435142
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1057435141}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 26.48674, y: 26.48674, z: 26.48674}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 761529400}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 980, y: 498}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1057435143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1057435141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.3660378, g: 0.21202566, b: 0.21202566, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 2800000, guid: 75c614ecb92204b46868c1397afeb745, type: 3}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &1057435144
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1057435141}
+  m_CullTransparentMesh: 1
 --- !u!1 &1061456330
 GameObject:
   m_ObjectHideFlags: 0
@@ -4493,7 +4866,7 @@ MonoBehaviour:
   endGameHour: 6
   currentTime: 0
   currentGameTime: 00:00
-  testMode: 0
+  testMode: 1
   testDurationSeconds: 30
 --- !u!4 &1213831027
 Transform:
@@ -5659,6 +6032,78 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1487144095}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1444140513
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1444140514}
+  - component: {fileID: 1444140516}
+  - component: {fileID: 1444140515}
+  m_Layer: 0
+  m_Name: Dirt4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &1444140514
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1444140513}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 26.48674, y: 26.48674, z: 26.48674}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 761529400}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 980, y: 498}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1444140515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1444140513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.3660378, g: 0.21202566, b: 0.21202566, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 2800000, guid: 75c614ecb92204b46868c1397afeb745, type: 3}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &1444140516
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1444140513}
+  m_CullTransparentMesh: 1
 --- !u!1 &1459311813
 GameObject:
   m_ObjectHideFlags: 0
@@ -6725,7 +7170,7 @@ GameObject:
   - component: {fileID: 1660891978}
   - component: {fileID: 1660891977}
   m_Layer: 0
-  m_Name: '[A/S] To Switch'
+  m_Name: KeyCam
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6747,7 +7192,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 192, y: 149}
+  m_AnchoredPosition: {x: 192, y: 161.4}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1660891977
@@ -6770,11 +7215,13 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '[A/D] To switch cam.
+  m_text: '[A/D] Switch cam
 
     [R] Reload
 
-    [E] To leave cam. '
+    [E] Leave cam
+
+    [F] Clean'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -7042,12 +7489,17 @@ MonoBehaviour:
   cameraWeapon: {fileID: 1547771252}
   cctvUI: {fileID: 718393747}
   cleaningTargets:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  dirtOverlay: {fileID: 0}
+  - {fileID: 2057590564}
+  - {fileID: 2140646873}
+  - {fileID: 1029748434}
+  - {fileID: 833814085}
+  - {fileID: 1814901618}
+  dirtOverlay: {fileID: 761529401}
+  wipeKey: 102
+  wipeAmount: 0.1
+  dirtInterval: 20
+  audioSource: {fileID: 0}
+  cleanDoneSound: {fileID: 0}
   computerInteractionDistance: 2.5
   eToUseUI: {fileID: 1459311813}
   blackScreen: {fileID: 1866258022}
@@ -7532,6 +7984,7 @@ GameObject:
   - component: {fileID: 1814901615}
   - component: {fileID: 1814901613}
   - component: {fileID: 1814901617}
+  - component: {fileID: 1814901618}
   m_Layer: 0
   m_Name: '5_CCTV_Cam '
   m_TagString: Untagged
@@ -7666,6 +8119,18 @@ MonoBehaviour:
   horizontalLimit: 80
   verticalUpLimit: 45
   verticalDownLimit: 45
+--- !u!114 &1814901618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1814901612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af61b86025f77ad41a9407cf7b16fef8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CCTVCleaningTarget
 --- !u!1 &1816654922
 GameObject:
   m_ObjectHideFlags: 0
@@ -7699,7 +8164,7 @@ MonoBehaviour:
   gameOverReason: 0
   gameStartDelay: 60
   warningTime: 5
-  isTest: 0
+  isTest: 1
   startText: {fileID: 486503865}
   startTextCanvasGroup: {fileID: 486503867}
   fadeInDuration: 0.5
@@ -9906,6 +10371,7 @@ GameObject:
   - component: {fileID: 2057590561}
   - component: {fileID: 2057590559}
   - component: {fileID: 2057590563}
+  - component: {fileID: 2057590564}
   m_Layer: 0
   m_Name: 1_CCTV_Cam
   m_TagString: Untagged
@@ -10040,6 +10506,18 @@ MonoBehaviour:
   horizontalLimit: 80
   verticalUpLimit: 45
   verticalDownLimit: 45
+--- !u!114 &2057590564
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2057590558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af61b86025f77ad41a9407cf7b16fef8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CCTVCleaningTarget
 --- !u!108 &2071315054 stripped
 Light:
   m_CorrespondingSourceObject: {fileID: 7803473396603295723, guid: 2dbb1b2af7dac0a429ed3da5c8ab957c, type: 3}
@@ -10402,6 +10880,7 @@ GameObject:
   - component: {fileID: 2140646870}
   - component: {fileID: 2140646868}
   - component: {fileID: 2140646872}
+  - component: {fileID: 2140646873}
   m_Layer: 0
   m_Name: '2_CCTV_Cam '
   m_TagString: Untagged
@@ -10536,6 +11015,18 @@ MonoBehaviour:
   horizontalLimit: 80
   verticalUpLimit: 45
   verticalDownLimit: 45
+--- !u!114 &2140646873
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2140646867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af61b86025f77ad41a9407cf7b16fef8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CCTVCleaningTarget
 --- !u!1 &2142761715
 GameObject:
   m_ObjectHideFlags: 0

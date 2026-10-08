@@ -57,9 +57,14 @@ public class GameTime : MonoBehaviour
         if (gameEnded)
             return;
 
+		if (GameManager.Instance != null &&
+	       !GameManager.Instance.IsPlaying())
+		{
+			return;
+		}
 
-        // เลือกว่าจะใช้เวลาเล่นจริงหรือ Test Mode
-        float duration = testMode
+		// เลือกว่าจะใช้เวลาเล่นจริงหรือ Test Mode
+		float duration = testMode
             ? testDurationSeconds
             : gameDurationSeconds;
 

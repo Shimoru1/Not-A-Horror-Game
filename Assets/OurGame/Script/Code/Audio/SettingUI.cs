@@ -17,9 +17,11 @@ public class SettingUI : MonoBehaviour
 			volumeSlider.minValue = 0f;
 			volumeSlider.maxValue = 1f;
 
-			// ดึงค่าที่บันทึกไว้
-			volumeSlider.value = AudioManager.Instance.GetMusicVolume();
+			float volume = (AudioManager.Instance != null)
+				? AudioManager.Instance.GetMusicVolume()
+				: 1f;
 
+			volumeSlider.SetValueWithoutNotify(volume);
 			volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
 		}
 	}
@@ -29,8 +31,7 @@ public class SettingUI : MonoBehaviour
 		if (settingsPanel != null)
 			settingsPanel.SetActive(true);
 
-		// ดึงค่าล่าสุดอีกครั้ง
-		if (volumeSlider != null)
+		if (volumeSlider != null && AudioManager.Instance != null)
 		{
 			volumeSlider.SetValueWithoutNotify(
 				AudioManager.Instance.GetMusicVolume()

@@ -27,7 +27,7 @@ public class CCTVManager : MonoBehaviour
 	[Header("Cleaning Settings")]
 	public KeyCode wipeKey = KeyCode.F;
 	[Range(0.01f, 1f)] public float wipeAmount = 0.1f;   // 10% ต่อการกด 1 ครั้ง
-	public float dirtInterval = 20f;                      // สุ่มเปื้อนทุก 20 วิ
+	public float dirtInterval = 20f;                      // สุ่มเปื้อนทุก  20วิ
 	public AudioSource audioSource;
 	public AudioClip cleanDoneSound;
 
@@ -723,7 +723,7 @@ public class CCTVManager : MonoBehaviour
 		if (isWatchingCCTV && dirtOverlay != null)
 			dirtOverlay.SetCamera(GetCurrentTarget());
 
-		Debug.Log("Camera dirty: " + picked.name);
+		Debug.Log("CAMERA DIRTY: " + picked.name);
 	}
 
 	// กด F รัวๆ เพื่อเช็ดกล้องที่กำลังดูอยู่
@@ -751,5 +751,14 @@ public class CCTVManager : MonoBehaviour
 			return null;
 
 		return cleaningTargets[currentCameraIndex];
+	}
+	public GameObject GetCurrentCameraObject()
+	{
+		if (cctvCameras == null ||
+			currentCameraIndex < 0 ||
+			currentCameraIndex >= cctvCameras.Length)
+			return null;
+
+		return cctvCameras[currentCameraIndex];
 	}
 }
