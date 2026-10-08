@@ -1,29 +1,51 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AnomalyManager : MonoBehaviour
 {
+    // ==================================================
+    // ANOMALY SETUP
+    // ==================================================
+
     [Header("Anomaly Setup")]
 
-    [Tooltip("ลาก Prefab ของ Anomaly มาใส่ตรงนี้ เพิ่มได้เรื่อยๆ")]
+    [Tooltip("ลาก Prefab ของ Anomaly มาใส่ตรงนี้")]
     public GameObject[] anomalyPrefabs;
 
     [Tooltip("ลากจุดเกิด Empty Object มาใส่ตรงนี้")]
     public Transform[] spawnPoints;
 
 
-    [Header("Spawn Timing")]
+    // ==================================================
+    // RANDOM SPAWN TIMING
+    // ==================================================
 
-    public float delayBeforeFirstSpawn = 30f;
+    [Header("Random Spawn Timing")]
 
-    public float spawnInterval = 10f;
+    [Tooltip("เวลาที่รอก่อนเริ่ม Spawn ตัวแรก")]
+    public float delayBeforeFirstSpawn = 5f;
 
+    [Tooltip("เวลาต่ำสุดก่อน Spawn ตัวถัดไป")]
+    public float minSpawnInterval = 5f;
+
+    [Tooltip("เวลาสูงสุดก่อน Spawn ตัวถัดไป")]
+    public float maxSpawnInterval = 10f;
+
+
+    // ==================================================
+    // SPAWN LIMIT
+    // ==================================================
 
     [Header("Spawn Limit")]
 
-    [Tooltip("จำนวน Anomaly สูงสุดที่อนุญาตให้มี ก่อน Game Over")]
+    [Tooltip("จำนวน Anomaly สูงสุดที่อนุญาตให้มีในฉากพร้อมกัน")]
     public int maxActiveAnomalies = 6;
 
+
+    // ==================================================
+    // ANOMALY COUNTER
+    // ==================================================
 
     [Header("Anomaly Counter")]
 
@@ -31,60 +53,125 @@ public class AnomalyManager : MonoBehaviour
     public AnomalyCounter counterSystem;
 
 
-    // เก็บ Anomaly ที่ถูก Spawn อยู่ในฉาก
+    // ==================================================
+    // INTERNAL DATA
+    // ==================================================
+
     private List<GameObject> activeAnomalies =
         new List<GameObject>();
 
+    private Coroutine spawnCoroutine;
 
-    private bool gameStarted = false;
 
-
-    // ==========================================
+    // ==================================================
     // START
-    // ==========================================
+    // ==================================================
 
-    void Start()
+    private void Start()
     {
         // ถ้ายังไม่ได้ลาก Counter มา
-        // ให้หาอัตโนมัติ
+        // ให้หาให้อัตโนมัติ
         if (counterSystem == null)
         {
             counterSystem =
                 FindFirstObjectByType<AnomalyCounter>();
         }
 
+        // เริ่มระบบ Spawn
+        spawnCoroutine =
+            StartCoroutine(SpawnLoop());
+    }
 
-        Invoke(
-            "StartSpawning",
+
+    // ==================================================
+    // SPAWN LOOP
+    // ==================================================
+
+    private IEnumerator SpawnLoop()
+    {
+        // ==========================================
+        // รอก่อนเกิดตัวแรก
+        // ==========================================
+
+        yield return new WaitForSeconds(
             delayBeforeFirstSpawn
         );
+
+
+        // ==========================================
+        // เริ่ม Spawn Loop
+        // ==========================================
+
+        while (true)
+        {
+            // ถ้าเกมจบแล้ว
+            // หยุด Spawn
+            if (GameManager.Instance != null &&
+                !GameManager.Instance.IsPlaying())
+            {
+                yield break;
+            }
+
+
+            // ลบตัวที่ถูก Destroy แล้ว
+            CleanupDestroyedAnomalies();
+
+
+            // ==========================================
+            // SPAWN
+            // ==========================================
+
+            if (activeAnomalies.Count < maxActiveAnomalies)
+            {
+                SpawnRandomAnomaly();
+            }
+            else
+            {
+                Debug.Log(
+                    "Anomaly เต็มแล้ว: " +
+                    activeAnomalies.Count +
+                    "/" +
+                    maxActiveAnomalies
+                );
+            }
+
+
+            // ==========================================
+            // สุ่มเวลารอครั้งต่อไป
+            // ==========================================
+
+            float randomWaitTime =
+                Random.Range(
+                    minSpawnInterval,
+                    maxSpawnInterval
+                );
+
+
+            Debug.Log(
+                "Next Anomaly Spawn ใน " +
+                randomWaitTime.ToString("F1") +
+                " วินาที"
+            );
+
+
+            // รอเวลาที่สุ่มได้
+            yield return new WaitForSeconds(
+                randomWaitTime
+            );
+        }
     }
 
 
-    // ==========================================
-    // START SPAWNING
-    // ==========================================
+    // ==================================================
+    // SPAWN RANDOM ANOMALY
+    // ==================================================
 
-    void StartSpawning()
+    private void SpawnRandomAnomaly()
     {
-        gameStarted = true;
+        // ==========================================
+        // ตรวจสอบเกม
+        // ==========================================
 
-
-        InvokeRepeating(
-            "SpawnRandomAnomaly",
-            0f,
-            spawnInterval
-        );
-    }
-
-
-    // ==========================================
-    // SPAWN ANOMALY
-    // ==========================================
-
-    void SpawnRandomAnomaly()
-    {
-        // ถ้าเกมจบแล้ว หยุด Spawn
         if (GameManager.Instance != null &&
             !GameManager.Instance.IsPlaying())
         {
@@ -92,29 +179,45 @@ public class AnomalyManager : MonoBehaviour
         }
 
 
+        // ==========================================
         // ตรวจสอบ Prefab
+        // ==========================================
+
         if (anomalyPrefabs == null ||
             anomalyPrefabs.Length == 0)
         {
+            Debug.LogWarning(
+                "AnomalyManager ไม่มี Anomaly Prefab!"
+            );
+
             return;
         }
 
 
+        // ==========================================
         // ตรวจสอบ Spawn Point
+        // ==========================================
+
         if (spawnPoints == null ||
             spawnPoints.Length == 0)
         {
+            Debug.LogWarning(
+                "AnomalyManager ไม่มี Spawn Point!"
+            );
+
             return;
         }
 
 
-        // ลบตัวที่ถูก Destroy แล้วออกจาก List
+        // ==========================================
+        // CLEANUP
+        // ==========================================
+
         CleanupDestroyedAnomalies();
 
 
         // ==========================================
-        // ถ้ามีครบ 6 ตัวแล้ว
-        // ยังไม่ Spawn เพิ่ม
+        // CHECK LIMIT
         // ==========================================
 
         if (activeAnomalies.Count >= maxActiveAnomalies)
@@ -124,7 +227,7 @@ public class AnomalyManager : MonoBehaviour
 
 
         // ==========================================
-        // สุ่ม Anomaly
+        // RANDOM PREFAB
         // ==========================================
 
         int randomPrefabIndex =
@@ -135,7 +238,7 @@ public class AnomalyManager : MonoBehaviour
 
 
         // ==========================================
-        // สุ่มจุดเกิด
+        // RANDOM SPAWN POINT
         // ==========================================
 
         int randomSpawnIndex =
@@ -146,7 +249,7 @@ public class AnomalyManager : MonoBehaviour
 
 
         // ==========================================
-        // Spawn
+        // SPAWN
         // ==========================================
 
         GameObject newAnomaly =
@@ -158,14 +261,14 @@ public class AnomalyManager : MonoBehaviour
 
 
         // ==========================================
-        // เพิ่มเข้า List
+        // ADD TO ACTIVE LIST
         // ==========================================
 
         activeAnomalies.Add(newAnomaly);
 
 
         // ==========================================
-        // แจ้ง AnomalyCounter
+        // ANOMALY COUNTER
         // ==========================================
 
         if (counterSystem != null)
@@ -175,12 +278,14 @@ public class AnomalyManager : MonoBehaviour
 
 
         // ==========================================
-        // Debug
+        // DEBUG
         // ==========================================
 
         Debug.Log(
-            "โผล่มาแล้ว: " +
+            "ANOMALY SPAWNED → " +
             anomalyPrefabs[randomPrefabIndex].name +
+            " | Spawn Point: " +
+            spawnPoints[randomSpawnIndex].name +
             " | Active: " +
             activeAnomalies.Count +
             "/" +
@@ -189,11 +294,11 @@ public class AnomalyManager : MonoBehaviour
     }
 
 
-    // ==========================================
-    // CLEANUP
-    // ==========================================
+    // ==================================================
+    // CLEANUP DESTROYED ANOMALIES
+    // ==================================================
 
-    void CleanupDestroyedAnomalies()
+    private void CleanupDestroyedAnomalies()
     {
         activeAnomalies.RemoveAll(
             anomaly => anomaly == null
@@ -201,12 +306,15 @@ public class AnomalyManager : MonoBehaviour
     }
 
 
-    // ==========================================
-    // DESTROY
-    // ==========================================
+    // ==================================================
+    // STOP COROUTINE
+    // ==================================================
 
     private void OnDestroy()
     {
-        CancelInvoke();
+        if (spawnCoroutine != null)
+        {
+            StopCoroutine(spawnCoroutine);
+        }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections;
 
 public class AnomalyTarget : MonoBehaviour
 {
+    private int killerCameraIndex = -1;
     // ==================================================
     // ANOMALY TYPE
     // ==================================================
@@ -12,6 +13,7 @@ public class AnomalyTarget : MonoBehaviour
         Threat,
         Disturbance,
         Harmless
+
     }
 
 
@@ -135,10 +137,10 @@ public class AnomalyTarget : MonoBehaviour
 
             case AnomalyType.Disturbance:
 
-                // Disturbance = ตอนนี้ยังไม่ทำระบบ Interaction
-                // จึงยังไม่ทำลายระบบเดิม
-                canBeShot = false;
-                requiresInteraction = true;
+                // Disturbance = ยิงได้
+                // ตัวสีเหลือง/สีส้มจะใช้ระบบนี้
+                canBeShot = true;
+                requiresInteraction = false;
                 isHarmless = false;
 
                 break;
@@ -160,53 +162,35 @@ public class AnomalyTarget : MonoBehaviour
     // TAKE DAMAGE
     // ==================================================
 
+    // แบบเดิม เอาไว้รองรับระบบอื่นที่เรียก TakeDamage(amount)
     public void TakeDamage(int amount)
     {
-        // ==============================================
-        // ถ้าตายแล้ว ไม่รับ Damage ซ้ำ
-        // ==============================================
+        TakeDamage(amount, -1);
+    }
 
-        if (isDead)
-            return;
-
-
-        // ==============================================
-        // ถ้ายิงไม่ได้
-        // ==============================================
-
+    // แบบใหม่ รับเลขกล้องที่ยิงเข้ามาด้วย
+    public void TakeDamage(int amount, int cameraIndex)
+    {
         if (!canBeShot)
-        {
-            Debug.Log(
-                gameObject.name +
-                " → Anomaly ตัวนี้ไม่สามารถยิงได้!"
-            );
-
             return;
+
+        // จำว่ากระสุนล่าสุดมาจากกล้องไหน
+        if (cameraIndex >= 0)
+        {
+            killerCameraIndex = cameraIndex;
         }
-
-
-        // ==============================================
-        // ลด HP
-        // ==============================================
 
         health -= amount;
 
-
         Debug.Log(
-            gameObject.name +
-            " โดนยิง! HP เหลือ: " +
-            health
+            $"💥 {gameObject.name} โดนยิง! " +
+            $"Damage: {amount} | HP เหลือ: {health} | " +
+            $"Camera: {(cameraIndex >= 0 ? cameraIndex + 1 : 0)}"
         );
 
-
-        // ==============================================
-        // ตรวจสอบการตาย
-        // ==============================================
-
-        if (health <= 0)
+        if (health <= 0 && !isDead)
         {
             isDead = true;
-
             StartCoroutine(DieWithDelay());
         }
     }
@@ -229,31 +213,71 @@ public class AnomalyTarget : MonoBehaviour
 
 
         // ==================================================
+        // ORANGE DISTURBANCE PENALTY
+        // ==================================================
+
+        if (anomalyType == AnomalyType.Disturbance && killerCameraIndex >= 0)
+        {
+            OrangeDisturbance orange =
+                GetComponent<OrangeDisturbance>();
+
+            if (orange == null)
+            {
+                orange = GetComponentInParent<OrangeDisturbance>();
+            }
+
+            if (orange != null)
+            {
+                orange.OnKilledByCamera(killerCameraIndex);
+            }
+            else
+            {
+                Debug.LogWarning(
+                    gameObject.name +
+                    " → หา OrangeDisturbance ไม่เจอ!"
+                );
+            }
+        }
+
+
+        // ==================================================
         // AMMO DROP
         // ==================================================
 
-        float roll = Random.value;
-
-
-        Debug.Log(
-            gameObject.name +
-            " Ammo Drop Roll = " +
-            roll.ToString("F2") +
-            " / Chance = " +
-            ammoDropChance.ToString("F2")
-        );
-
-
-        if (roll < ammoDropChance)
-        {
-            SpawnAmmoPickup();
-        }
-        else
+        // 🟠 Orange Disturbance เป็นตัวลงโทษ
+        // ดังนั้น "ห้าม" ดรอปกระสุน
+        if (anomalyType == AnomalyType.Disturbance)
         {
             Debug.Log(
                 gameObject.name +
-                " ไม่ดรอปกระสุน"
+                " → 🟠 Disturbance: ไม่ดรอปกระสุน เพราะเป็นตัวลงโทษ"
             );
+        }
+        else
+        {
+            // Anomaly ประเภทอื่นยังใช้ระบบดรอปกระสุนเดิม
+            float roll = Random.value;
+
+            Debug.Log(
+                gameObject.name +
+                " Ammo Drop Roll = " +
+                roll.ToString("F2") +
+                " / Chance = " +
+                ammoDropChance.ToString("F2")
+            );
+
+
+            if (roll < ammoDropChance)
+            {
+                SpawnAmmoPickup();
+            }
+            else
+            {
+                Debug.Log(
+                    gameObject.name +
+                    " ไม่ดรอปกระสุน"
+                );
+            }
         }
 
 

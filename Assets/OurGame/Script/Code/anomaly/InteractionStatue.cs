@@ -34,20 +34,21 @@ public class InteractionStatue : MonoBehaviour
             normalRotation * Quaternion.Euler(0f, anomalyRotation, 0f);
 
         // หา Player
-        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        GameObject playerObject =
+            GameObject.FindGameObjectWithTag("Player");
 
         if (playerObject != null)
         {
             player = playerObject.transform;
         }
 
-        // เริ่มนับเวลา
+        // เริ่มนับเวลา 5 วินาที
         Invoke(nameof(ActivateAnomaly), anomalyDelay);
     }
 
     private void Update()
     {
-        // ถ้าไม่มี Player ให้ลองหาใหม่
+        // ถ้ายังหา Player ไม่เจอ ให้หาใหม่
         if (player == null)
         {
             GameObject playerObject =
@@ -68,7 +69,7 @@ public class InteractionStatue : MonoBehaviour
         float distance =
             Vector3.Distance(player.position, transform.position);
 
-        // ถ้าอยู่นอกระยะ
+        // อยู่นอกระยะ → รีเซ็ตเวลาการกด
         if (distance > interactionDistance)
         {
             holdTimer = 0f;
@@ -80,14 +81,14 @@ public class InteractionStatue : MonoBehaviour
         {
             holdTimer += Time.deltaTime;
 
-            // หมุนกลับอย่างต่อเนื่อง
+            // หมุนกลับตำแหน่งเดิม
             transform.rotation = Quaternion.RotateTowards(
                 transform.rotation,
                 normalRotation,
                 rotateSpeed * Time.deltaTime
             );
 
-            // กดค้างครบเวลาที่กำหนด
+            // กดค้างครบเวลา
             if (holdTimer >= holdDuration)
             {
                 FixAnomaly();
@@ -107,7 +108,7 @@ public class InteractionStatue : MonoBehaviour
 
         anomalyActive = true;
 
-        // หมุนรูปปั้นไปตำแหน่งผิดปกติทันที
+        // หมุนรูปปั้นไปตำแหน่งผิดปกติ
         transform.rotation = anomalyRotationTarget;
 
         Debug.Log(
@@ -122,13 +123,19 @@ public class InteractionStatue : MonoBehaviour
         anomalyActive = false;
         holdTimer = 0f;
 
-        // ล็อกกลับตำแหน่งปกติ
+        // กลับตำแหน่งปกติ
         transform.rotation = normalRotation;
 
         Debug.Log(
             gameObject.name +
             " : Interaction Anomaly Fixed!"
         );
+    }
+
+    private void OnDestroy()
+    {
+        // ป้องกัน Invoke ที่ยังค้างอยู่
+        CancelInvoke();
     }
 
     private void OnDrawGizmosSelected()
