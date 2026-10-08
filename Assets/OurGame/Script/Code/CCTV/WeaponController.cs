@@ -58,6 +58,8 @@ public class WeaponController : MonoBehaviour
 
     private int currentCameraIndex = 0;
 
+	[Header("Ammo Mode")]
+	public bool shareAmmoAcrossCameras = true;
 
 	private bool isPaused = false;
 
@@ -139,7 +141,6 @@ public class WeaponController : MonoBehaviour
 			Shoot();
 		}
 	}
-
 
 	public void EnableWeapon()
     {
@@ -343,12 +344,11 @@ public class WeaponController : MonoBehaviour
 
         yield return new WaitForSeconds(reloadTime);
 
-        // ถ้าเปลี่ยนกล้องระหว่าง Reload
-        // ให้เติมกล้องเดิมที่เริ่ม Reload
-        if (reloadCamera >= 0 &&
-            reloadCamera < cameraAmmo.Length &&
-            cameraAmmo[reloadCamera] != null)
-        {
+		// ถ้าเปลี่ยนกล้องระหว่าง Reload
+		// ให้เติมกล้องเดิมที่เริ่ม Reload
+		int ammoIdx = AmmoIndex(reloadCamera);
+		if (ammoIdx >= 0 && ammoIdx < cameraAmmo.Length && cameraAmmo[ammoIdx] != null)
+		{
             CameraAmmo ammo = cameraAmmo[reloadCamera];
 
             int neededAmmo = maxAmmo - ammo.magazineAmmo;
@@ -436,23 +436,26 @@ public class WeaponController : MonoBehaviour
         return 0;
     }
 
-    CameraAmmo GetCurrentAmmoData()
-    {
-        if (cameraAmmo == null)
-            return null;
+	int AmmoIndex(int camIndex)
+	{
+		return shareAmmoAcrossCameras ? 0 : camIndex;
+	}
 
-        if (currentCameraIndex < 0 ||
-            currentCameraIndex >= cameraAmmo.Length)
-            return null;
+	CameraAmmo GetCurrentAmmoData()
+	{
+		if (cameraAmmo == null) return null;
 
-        return cameraAmmo[currentCameraIndex];
-    }
+		int i = AmmoIndex(currentCameraIndex);
+		if (i < 0 || i >= cameraAmmo.Length) return null;
 
-    // =========================================
-    // Bullet Trail
-    // =========================================
+		return cameraAmmo[i];
+	}
 
-    IEnumerator ShowBulletTrail(
+	// =========================================
+	// Bullet Trail
+	// =========================================
+
+	IEnumerator ShowBulletTrail(
         Vector3 startPoint,
         Vector3 endPoint)
     {
@@ -565,7 +568,7 @@ public class WeaponController : MonoBehaviour
 			return;
 		}
 
-		CameraAmmo ammo = cameraAmmo[cameraIndex];
+		CameraAmmo ammo = cameraAmmo[AmmoIndex(cameraIndex)];
 
 		if (ammo == null)
 			return;
@@ -602,10 +605,14 @@ public class WeaponController : MonoBehaviour
 		if (amount <= 0 || cameraAmmo == null)
 			return;
 
-		foreach (CameraAmmo ammo in cameraAmmo)
+		if (shareAmmoAcrossCameras)
 		{
-			if (ammo != null)
-				ammo.reserveAmmo += amount;
+			cameraAmmo[0].reserveAmmo += amount;
+		}
+		else
+		{
+			foreach (CameraAmmo ammo in cameraAmmo)
+				if (ammo != null) ammo.reserveAmmo += amount;
 		}
 
 		Debug.Log("ทุกกล้องได้กระสุนสำรอง +" + amount);

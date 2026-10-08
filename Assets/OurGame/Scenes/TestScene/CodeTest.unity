@@ -6748,6 +6748,7 @@ MonoBehaviour:
   reloadSound: {fileID: 8300000, guid: 40295845752dd9044a73eecede8b63ff, type: 3}
   ammoEmptyCausesGameOver: 1
   currentCameraAmmoEmpty: 0
+  shareAmmoAcrossCameras: 1
 --- !u!4 &1547771253
 Transform:
   m_ObjectHideFlags: 0
@@ -11520,7 +11521,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 547d8359f4fb0ed448304e940fa9b742, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  moveSpeed: 4
+  moveSpeed: 5
   groundDrag: 5
   playerHeight: 2
   whatIsGround:
