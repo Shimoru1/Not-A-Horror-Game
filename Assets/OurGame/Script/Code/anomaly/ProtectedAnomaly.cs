@@ -23,13 +23,14 @@ public class ProtectedAnomaly : MonoBehaviour
 
     [Tooltip("จำนวนวินาทีที่ Protected Anomaly จะอยู่ในด่าน")]
     [SerializeField] private float lifetime = 10f;
+	private float lifeTimer = 0f;
 
 
-    // ==================================================
-    // TEST SETTINGS
-    // ==================================================
+	// ==================================================
+	// TEST SETTINGS
+	// ==================================================
 
-    [Header("Test Settings")]
+	[Header("Test Settings")]
 
     [Tooltip("เปิดเพื่อให้เห็นข้อความใน Console เมื่อถูกยิง")]
     [SerializeField] private bool debugLog = true;
@@ -48,21 +49,25 @@ public class ProtectedAnomaly : MonoBehaviour
 
     private void Start()
     {
-        if (autoDestroy)
-        {
-            Invoke(nameof(RemoveAnomaly), lifetime);
-        }
+       
     }
 
 
-    // ==================================================
-    // PROTECTED HIT
-    // ==================================================
+	private void Update()
+	{
+		if (GameManager.Instance != null &&
+			!GameManager.Instance.IsPlaying())
+			return;
 
-    /// <summary>
-    /// เรียกใช้เมื่อกระสุนตรวจพบว่าโดน Protected Anomaly
-    /// </summary>
-    public void OnProtectedHit()
+		if (!autoDestroy)
+			return;
+
+		lifeTimer += Time.deltaTime;
+
+		if (lifeTimer >= lifetime)
+			RemoveAnomaly();
+	}
+	public void OnProtectedHit()
     {
         if (!isProtected)
             return;

@@ -50,8 +50,18 @@ public class AnomalyWander : MonoBehaviour
 
     private void Update()
     {
-        // กัน Error กรณี Object ถูกทำลาย
-        if (this == null || gameObject == null)
+		if (agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh)
+			return;
+
+		bool playing = GameManager.Instance == null ||
+					   GameManager.Instance.IsPlaying();
+
+		agent.isStopped = !playing;   // หยุดเดิน/ออกเดินต่อ
+
+		if (!playing)
+			return;
+		// กัน Error กรณี Object ถูกทำลาย
+		if (this == null || gameObject == null)
             return;
 
         if (agent == null)

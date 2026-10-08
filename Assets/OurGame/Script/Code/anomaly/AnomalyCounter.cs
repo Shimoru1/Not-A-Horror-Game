@@ -63,8 +63,12 @@ public class AnomalyCounter : MonoBehaviour
 
     public void AnomalyRemoved()
     {
-        // ลดจำนวนที่อยู่ในฉาก
-        currentAnomaly--;
+		if (GameManager.Instance != null &&
+		   !GameManager.Instance.IsPlaying())
+			return;
+
+		// ลดจำนวนที่อยู่ในฉาก
+		currentAnomaly--;
 
 
         if (currentAnomaly < 0)

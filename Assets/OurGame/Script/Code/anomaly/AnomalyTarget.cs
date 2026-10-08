@@ -165,7 +165,14 @@ public class AnomalyTarget : MonoBehaviour
     // แบบเดิม เอาไว้รองรับระบบอื่นที่เรียก TakeDamage(amount)
     public void TakeDamage(int amount)
     {
-        TakeDamage(amount, -1);
+		if (GameManager.Instance != null &&
+			!GameManager.Instance.IsPlaying())
+			return;
+
+		if (!canBeShot)
+			return;
+
+		TakeDamage(amount, -1);
     }
 
     // แบบใหม่ รับเลขกล้องที่ยิงเข้ามาด้วย

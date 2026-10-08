@@ -83,90 +83,62 @@ public class AnomalyManager : MonoBehaviour
     }
 
 
-    // ==================================================
-    // SPAWN LOOP
-    // ==================================================
+	// ==================================================
+	// SPAWN LOOP
+	// ==================================================
 
-    private IEnumerator SpawnLoop()
-    {
-        // ==========================================
-        // รอก่อนเกิดตัวแรก
-        // ==========================================
+	private IEnumerator SpawnLoop()
+	{
+		// รอจนกว่าเกมจะเข้าสู่ Playing (รวมถึงช่วง Starting)
+		while (GameManager.Instance != null &&
+			   !GameManager.Instance.IsPlaying())
+		{
+			// ถ้าเกมจบไปแล้วก่อนเริ่ม ก็ไม่ต้อง spawn
+			if (GameManager.Instance.IsGameOver() ||
+				GameManager.Instance.IsWin())
+				yield break;
 
-        yield return new WaitForSeconds(
-            delayBeforeFirstSpawn
-        );
+			yield return null;
+		}
 
+		// เริ่มนับ delay หลังเกมเริ่มจริง
+		yield return new WaitForSeconds(delayBeforeFirstSpawn);
 
-        // ==========================================
-        // เริ่ม Spawn Loop
-        // ==========================================
+		while (true)
+		{
+			if (GameManager.Instance != null)
+			{
+				// จบเกมแล้ว หยุดถาวร
+				if (GameManager.Instance.IsGameOver() ||
+					GameManager.Instance.IsWin())
+					yield break;
 
-        while (true)
-        {
-            // ถ้าเกมจบแล้ว
-            // หยุด Spawn
-            if (GameManager.Instance != null &&
-                !GameManager.Instance.IsPlaying())
-            {
-                yield break;
-            }
+				// Pause ชั่วคราว: รอจนกลับมา Playing
+				if (!GameManager.Instance.IsPlaying())
+				{
+					yield return null;
+					continue;
+				}
+			}
 
+			CleanupDestroyedAnomalies();
 
-            // ลบตัวที่ถูก Destroy แล้ว
-            CleanupDestroyedAnomalies();
+			if (activeAnomalies.Count < maxActiveAnomalies)
+				SpawnRandomAnomaly();
 
+			float randomWaitTime =
+				Random.Range(minSpawnInterval, maxSpawnInterval);
 
-            // ==========================================
-            // SPAWN
-            // ==========================================
-
-            if (activeAnomalies.Count < maxActiveAnomalies)
-            {
-                SpawnRandomAnomaly();
-            }
-            else
-            {
-                Debug.Log(
-                    "Anomaly เต็มแล้ว: " +
-                    activeAnomalies.Count +
-                    "/" +
-                    maxActiveAnomalies
-                );
-            }
+			yield return new WaitForSeconds(randomWaitTime);
+		}
+	}
 
 
-            // ==========================================
-            // สุ่มเวลารอครั้งต่อไป
-            // ==========================================
+	// ==================================================
+	// SPAWN RANDOM ANOMALY
+	// ==================================================
 
-            float randomWaitTime =
-                Random.Range(
-                    minSpawnInterval,
-                    maxSpawnInterval
-                );
-
-
-            Debug.Log(
-                "Next Anomaly Spawn ใน " +
-                randomWaitTime.ToString("F1") +
-                " วินาที"
-            );
-
-
-            // รอเวลาที่สุ่มได้
-            yield return new WaitForSeconds(
-                randomWaitTime
-            );
-        }
-    }
-
-
-    // ==================================================
-    // SPAWN RANDOM ANOMALY
-    // ==================================================
-
-    private void SpawnRandomAnomaly()
+	private void SpawnRandomAnomaly()
     {
         // ==========================================
         // ตรวจสอบเกม

@@ -23,33 +23,36 @@ public class InteractionStatue : MonoBehaviour
     private bool fixedAnomaly = false;
 
     private float holdTimer = 0f;
+	private float anomalyTimer = 0f;
 
-    private void Start()
+	private void Start()
     {
-        // จำตำแหน่งปกติของรูปปั้น
-        normalRotation = transform.rotation;
+		normalRotation = transform.rotation;
+		anomalyRotationTarget =
+			normalRotation * Quaternion.Euler(0f, anomalyRotation, 0f);
 
-        // สร้างตำแหน่งผิดปกติ
-        anomalyRotationTarget =
-            normalRotation * Quaternion.Euler(0f, anomalyRotation, 0f);
-
-        // หา Player
-        GameObject playerObject =
-            GameObject.FindGameObjectWithTag("Player");
-
-        if (playerObject != null)
-        {
-            player = playerObject.transform;
-        }
-
-        // เริ่มนับเวลา 5 วินาที
-        Invoke(nameof(ActivateAnomaly), anomalyDelay);
-    }
+		GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+		if (playerObject != null)
+			player = playerObject.transform;
+	}
 
     private void Update()
     {
-        // ถ้ายังหา Player ไม่เจอ ให้หาใหม่
-        if (player == null)
+		if (GameManager.Instance != null &&
+			!GameManager.Instance.IsPlaying())
+			return;
+
+		// นับเวลาก่อนเกิด anomaly (นับเฉพาะตอน Playing)
+		if (!anomalyActive && !fixedAnomaly)
+		{
+			anomalyTimer += Time.deltaTime;
+
+			if (anomalyTimer >= anomalyDelay)
+				ActivateAnomaly();
+		}
+
+		// ถ้ายังหา Player ไม่เจอ ให้หาใหม่
+		if (player == null)
         {
             GameObject playerObject =
                 GameObject.FindGameObjectWithTag("Player");
