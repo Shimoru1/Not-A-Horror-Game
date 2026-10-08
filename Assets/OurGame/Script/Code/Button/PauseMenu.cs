@@ -57,7 +57,8 @@ public class PauseMenu : MonoBehaviour
 		{
 			// ถ้าเกมจบแล้ว ไม่ให้ Pause
 			if (GameManager.Instance != null &&
-				!GameManager.Instance.IsPlaying())
+				(GameManager.Instance.IsWin() ||
+				 GameManager.Instance.IsGameOver()))
 			{
 				return;
 			}
@@ -93,7 +94,8 @@ public class PauseMenu : MonoBehaviour
 		if (GameManager.Instance == null)
 			return;
 
-		if (!GameManager.Instance.IsPlaying())
+		if (!GameManager.Instance.IsPlaying() &&
+			!GameManager.Instance.IsStarting())
 			return;
 
 		IsPaused = true;

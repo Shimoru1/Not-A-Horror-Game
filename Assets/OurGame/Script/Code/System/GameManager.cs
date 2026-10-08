@@ -4,6 +4,7 @@ using TMPro;
 public class GameManager : MonoBehaviour
 {
 	public static GameManager Instance;
+	private GameState stateBeforePause = GameState.Playing;
 
 	public enum GameState
 	{
@@ -242,9 +243,12 @@ public class GameManager : MonoBehaviour
 
 	public void PauseGame()
 	{
-		if (currentState != GameState.Playing)
+		// pause ได้ทั้งตอน Starting และ Playing
+		if (currentState != GameState.Playing &&
+			currentState != GameState.Starting)
 			return;
 
+		stateBeforePause = currentState;
 		currentState = GameState.Paused;
 
 		Time.timeScale = 0f;
@@ -252,28 +256,21 @@ public class GameManager : MonoBehaviour
 		UnlockMouse();
 
 		if (showDebugLog)
-		{
-			Debug.Log("GAME PAUSED");
-		}
+			Debug.Log("GAME PAUSED (from " + stateBeforePause + ")");
 	}
-
-	// =========================================================
-	// RESUME
-	// =========================================================
 
 	public void ResumeGame()
 	{
 		if (currentState != GameState.Paused)
 			return;
 
-		currentState = GameState.Playing;
+		// กลับไปสถานะเดิม (Starting หรือ Playing)
+		currentState = stateBeforePause;
 
 		Time.timeScale = 1f;
 
 		if (showDebugLog)
-		{
-			Debug.Log("GAME RESUMED");
-		}
+			Debug.Log("GAME RESUMED (to " + currentState + ")");
 	}
 
 	// =========================================================

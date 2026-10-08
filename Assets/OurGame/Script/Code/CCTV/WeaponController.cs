@@ -551,6 +551,68 @@ public class WeaponController : MonoBehaviour
         ammoText.text =
             ammo.magazineAmmo + "/" + ammo.reserveAmmo;
     }
+	
+	public void ReduceAmmo(int cameraIndex, int amount)
+	{
+		if (amount <= 0)
+			return;
+
+		if (cameraAmmo == null ||
+			cameraIndex < 0 ||
+			cameraIndex >= cameraAmmo.Length)
+		{
+			Debug.LogWarning("ReduceAmmo: camera index ไม่ถูกต้อง = " + cameraIndex);
+			return;
+		}
+
+		CameraAmmo ammo = cameraAmmo[cameraIndex];
+
+		if (ammo == null)
+			return;
+
+		int remaining = amount;
+
+		// หักจาก Reserve ก่อน
+		int fromReserve = Mathf.Min(remaining, ammo.reserveAmmo);
+		ammo.reserveAmmo -= fromReserve;
+		remaining -= fromReserve;
+
+		// ถ้ายังเหลือ ค่อยหักจาก Magazine
+		if (remaining > 0)
+		{
+			ammo.magazineAmmo =
+				Mathf.Max(0, ammo.magazineAmmo - remaining);
+		}
+
+		Debug.Log(
+			"Camera " + (cameraIndex + 1) +
+			" ถูกหักกระสุน " + amount +
+			" → " + ammo.magazineAmmo + "/" + ammo.reserveAmmo
+		);
+
+		UpdateAmmoUI();
+
+		// ถ้ากระสุนของกล้องนี้หมดทั้งหมด ให้เช็กแพ้
+		if (cameraIndex == currentCameraIndex)
+			CheckAmmoGameOver();
+	}
+	// เติมกระสุนสำรองให้ทุกกล้อง (ใช้กับกล่องกระสุน)
+	public void AddReserveAmmoToAll(int amount)
+	{
+		if (amount <= 0 || cameraAmmo == null)
+			return;
+
+		foreach (CameraAmmo ammo in cameraAmmo)
+		{
+			if (ammo != null)
+				ammo.reserveAmmo += amount;
+		}
+
+		Debug.Log("ทุกกล้องได้กระสุนสำรอง +" + amount);
+
+		UpdateAmmoUI();
+	}
+
 	public void SetPaused(bool paused)
 	{
 		isPaused = paused;
