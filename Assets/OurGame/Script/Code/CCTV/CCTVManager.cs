@@ -20,11 +20,20 @@ public class CCTVManager : MonoBehaviour
     [Header("CCTV UI")]
     public GameObject cctvUI;
 
-    [Header("Dirt System")]
-    public CCTVCleaningTarget[] cleaningTargets;
-    public CCTVDirtOverlay dirtOverlay;
+	[Header("Dirt System")]
+	public CCTVCleaningTarget[] cleaningTargets;
+	public CCTVDirtOverlay dirtOverlay;
 
-    private Dictionary<Camera, bool> cameraStates =
+	[Header("Cleaning Settings")]
+	public KeyCode wipeKey = KeyCode.F;
+	[Range(0.01f, 1f)] public float wipeAmount = 0.1f;   // 10% ต่อการกด 1 ครั้ง
+	public float dirtInterval = 20f;                      // สุ่มเปื้อนทุก 20 วิ
+	public AudioSource audioSource;
+	public AudioClip cleanDoneSound;
+
+	private float dirtTimer = 0f;
+
+	private Dictionary<Camera, bool> cameraStates =
         new Dictionary<Camera, bool>();
 
     private int currentCameraIndex = 0;
@@ -96,6 +105,7 @@ public class CCTVManager : MonoBehaviour
         }
 
         LockMouse();
+		UpdateRandomDirt();
 
 		if (!isWatchingCCTV)
 		{
@@ -136,15 +146,16 @@ public class CCTVManager : MonoBehaviour
             }
         }
 
-        // CCTV CAMERA SWITCHING
-        if (isWatchingCCTV)
-        {
-            if (powerOff)
-                return;
+		// CCTV CAMERA SWITCHING
+		if (isWatchingCCTV)
+		{
+			if (powerOff)
+				return;
 
-            HandleCameraSwitching();
-        }
-    }
+			HandleCameraSwitching();
+			HandleWiping();
+		}
+	}
 
 
     private void LockMouse()
@@ -676,4 +687,69 @@ public class CCTVManager : MonoBehaviour
             );
         }
     }
+	// สุ่มเปื้อนทุก dirtInterval วินาที (เปื้อนทันที ไม่ว่าจะดูกล้องอยู่หรือไม่)
+	private void UpdateRandomDirt()
+	{
+		dirtTimer += Time.deltaTime;
+
+		if (dirtTimer < dirtInterval)
+			return;
+
+		dirtTimer = 0f;
+
+		if (cleaningTargets == null || cleaningTargets.Length == 0)
+			return;
+
+		// เก็บเฉพาะกล้องที่ยังสะอาดอยู่
+		List<CCTVCleaningTarget> cleanCams =
+			new List<CCTVCleaningTarget>();
+
+		foreach (CCTVCleaningTarget t in cleaningTargets)
+		{
+			if (t != null && !t.IsDirty())
+				cleanCams.Add(t);
+		}
+
+		// ถ้าเปื้อนครบทุกกล้องแล้ว ไม่เกิดซ้ำ
+		if (cleanCams.Count == 0)
+			return;
+
+		CCTVCleaningTarget picked =
+			cleanCams[Random.Range(0, cleanCams.Count)];
+
+		picked.MakeDirty();
+
+		// ถ้ากำลังดูกล้องตัวนั้นอยู่ ให้ overlay อัปเดตทันที
+		if (isWatchingCCTV && dirtOverlay != null)
+			dirtOverlay.SetCamera(GetCurrentTarget());
+
+		Debug.Log("Camera dirty: " + picked.name);
+	}
+
+	// กด F รัวๆ เพื่อเช็ดกล้องที่กำลังดูอยู่
+	private void HandleWiping()
+	{
+		if (!Input.GetKeyDown(wipeKey))
+			return;
+
+		CCTVCleaningTarget target = GetCurrentTarget();
+
+		if (target == null || !target.IsDirty())
+			return;
+
+		bool finished = target.Wipe(wipeAmount);
+
+		if (finished && audioSource != null && cleanDoneSound != null)
+			audioSource.PlayOneShot(cleanDoneSound);
+	}
+
+	private CCTVCleaningTarget GetCurrentTarget()
+	{
+		if (cleaningTargets == null ||
+			currentCameraIndex < 0 ||
+			currentCameraIndex >= cleaningTargets.Length)
+			return null;
+
+		return cleaningTargets[currentCameraIndex];
+	}
 }
