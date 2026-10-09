@@ -35,6 +35,7 @@ public class ButtonManager : MonoBehaviour
 	public Image[] stageImages;
 	public TMP_Text stageName;
 	public string[] sceneNames;
+	public string[] stageDisplayNames;
 	private int currentStage = 0;
 	private bool isChangingStage = false;
 
@@ -382,7 +383,16 @@ public class ButtonManager : MonoBehaviour
 		if (stageName == null)
 			return;
 
-		stageName.text = "Stage " + (currentStage + 1);
+		if (stageDisplayNames != null &&
+			currentStage < stageDisplayNames.Length &&
+			!string.IsNullOrEmpty(stageDisplayNames[currentStage]))
+		{
+			stageName.text = stageDisplayNames[currentStage];
+		}
+		else
+		{
+			stageName.text = "Stage " + (currentStage + 1);
+		}
 	}
 
 	public void StartGame()

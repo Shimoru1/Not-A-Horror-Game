@@ -26,10 +26,15 @@ public class CCTVManager : MonoBehaviour
 
 	[Header("Cleaning Settings")]
 	public KeyCode wipeKey = KeyCode.F;
-	[Range(0.01f, 1f)] public float wipeAmount = 0.1f;   // 10% ต่อการกด 1 ครั้ง
-	public float dirtInterval = 20f;                      // สุ่มเปื้อนทุก  20วิ
+	[Range(0.01f, 1f)] public float wipeAmount = 0.1f;
+	public float dirtInterval = 20f;                    
 	public AudioSource audioSource;
 	public AudioClip cleanDoneSound;
+	public AudioClip switchCameraSound;
+
+	[Header("Player Control")]
+	public MonoBehaviour[] playerMovementScripts;
+	public PlayerMovement playerMovement;
 
 	private float dirtTimer = 0f;
 
@@ -256,8 +261,9 @@ public class CCTVManager : MonoBehaviour
         Debug.Log("ENTER CCTV");
 
         isWatchingCCTV = true;
+		SetPlayerMovement(false);
 
-        if (repairIcon != null)
+		if (repairIcon != null)
             repairIcon.SetActive(false);
 
         SaveCameraStates();
@@ -304,8 +310,9 @@ public class CCTVManager : MonoBehaviour
         Debug.Log("EXIT CCTV");
 
         isWatchingCCTV = false;
+		SetPlayerMovement(true);
 
-        DisableAllCCTVCameras();
+		DisableAllCCTVCameras();
 
         if (cctvUI != null)
             cctvUI.SetActive(false);
@@ -448,7 +455,9 @@ public class CCTVManager : MonoBehaviour
                 cctvCameras.Length - 1;
         }
 
-        ActivateCurrentCamera();
+		if (audioSource != null && switchCameraSound != null)
+			audioSource.PlayOneShot(switchCameraSound);
+		ActivateCurrentCamera();
     }
 
 
@@ -762,4 +771,14 @@ public class CCTVManager : MonoBehaviour
 		return cctvCameras[currentCameraIndex];
 	}
 
+	private void SetPlayerMovement(bool canMove)
+	{
+		if (playerMovement == null)
+			return;
+
+		playerMovement.canMove = canMove;
+
+		if (!canMove)
+			playerMovement.StopMovement();
+	}
 }

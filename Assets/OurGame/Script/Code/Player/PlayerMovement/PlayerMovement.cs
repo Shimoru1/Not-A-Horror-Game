@@ -18,8 +18,9 @@ public class PlayerMovement : MonoBehaviour
     private float verticalInput;
 
     private Vector3 moveDirection;
+	public bool canMove = true;
 
-    private Rigidbody rb;
+	private Rigidbody rb;
 
 
     private void Start()
@@ -61,34 +62,42 @@ public class PlayerMovement : MonoBehaviour
 
     private void PlayerInput()
     {
-        // ใช้ชื่อ Input ของฟ้า
-        horizontalInput =
-            Input.GetAxisRaw("MoveX");
+		if (!canMove)
+		{
+			horizontalInput = 0f;
+			verticalInput = 0f;
+			return;
+		}
 
-        verticalInput =
-            Input.GetAxisRaw("MoveY");
-    }
+		horizontalInput = Input.GetAxisRaw("MoveX");
+		verticalInput = Input.GetAxisRaw("MoveY");
+	}
 
 
     private void MovePlayer()
     {
-        if (orientation == null)
-            return;
+		if (orientation == null || !canMove)
+			return;
 
-        moveDirection =
-            orientation.forward * verticalInput +
-            orientation.right * horizontalInput;
+		moveDirection =
+			orientation.forward * verticalInput +
+			orientation.right * horizontalInput;
 
-        rb.AddForce(
-            moveDirection.normalized *
-            moveSpeed *
-            10f,
-            ForceMode.Force
-        );
-    }
+		rb.AddForce(
+			moveDirection.normalized * moveSpeed * 10f,
+			ForceMode.Force
+		);
+	}
+	public void StopMovement()
+	{
+		if (rb == null)
+			rb = GetComponent<Rigidbody>();
+
+		rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+	}
 
 
-    private void SpeedControl()
+	private void SpeedControl()
     {
         Vector3 flatVel = new Vector3(
             rb.linearVelocity.x,

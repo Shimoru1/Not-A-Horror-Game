@@ -6,6 +6,13 @@ public class GameManager : MonoBehaviour
 	public static GameManager Instance;
 	private GameState stateBeforePause = GameState.Playing;
 
+	[Header("AUDIO")]
+	[SerializeField] private AudioSource musicSource;   // ตั้ง Loop ได้ ปิด Play On Awake
+	[SerializeField] private AudioSource sfxSource;
+	[SerializeField] private AudioClip startMusic;
+	[SerializeField] private AudioClip winSound;
+	[SerializeField] private AudioClip gameOverSound;
+
 	public enum GameState
 	{
 		Starting,
@@ -118,6 +125,13 @@ public class GameManager : MonoBehaviour
 			startTextCanvasGroup.alpha = 0f;
 		}
 
+		if (musicSource != null && startMusic != null)
+		{
+			musicSource.clip = startMusic;
+			musicSource.loop = true;
+			musicSource.Play();
+		}
+
 		if (showDebugLog)
 		{
 			Debug.Log("GAME STARTING...");
@@ -142,6 +156,7 @@ public class GameManager : MonoBehaviour
 		{
 			startText.gameObject.SetActive(true);
 			startText.text = "Wait.. what was that..";
+			StartCoroutine(FadeOutMusic(warningTime));
 		}
 
 		// =====================================================
@@ -237,6 +252,34 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
+	private System.Collections.IEnumerator FadeOutMusic(float duration)
+	{
+		if (musicSource == null)
+			yield break;
+
+		float startVolume = musicSource.volume;
+		float t = 0f;
+
+		while (t < duration)
+		{
+			t += Time.deltaTime;
+			musicSource.volume = Mathf.Lerp(startVolume, 0f, t / duration);
+			yield return null;
+		}
+
+		musicSource.Stop();
+		musicSource.volume = startVolume;
+	}
+
+	private void PlayEndSound(AudioClip clip)
+	{
+		if (musicSource != null)
+			musicSource.Stop();
+
+		if (sfxSource != null && clip != null)
+			sfxSource.PlayOneShot(clip);
+	}
+
 	// =========================================================
 	// PAUSE
 	// =========================================================
@@ -254,6 +297,7 @@ public class GameManager : MonoBehaviour
 		Time.timeScale = 0f;
 
 		UnlockMouse();
+		if (musicSource != null) musicSource.Pause();
 
 		if (showDebugLog)
 			Debug.Log("GAME PAUSED (from " + stateBeforePause + ")");
@@ -268,6 +312,7 @@ public class GameManager : MonoBehaviour
 		currentState = stateBeforePause;
 
 		Time.timeScale = 1f;
+		if (musicSource != null) musicSource.UnPause();
 
 		if (showDebugLog)
 			Debug.Log("GAME RESUMED (to " + currentState + ")");
@@ -285,6 +330,7 @@ public class GameManager : MonoBehaviour
 		gameOverReason = GameOverReason.None;
 
 		StopGame();
+		PlayEndSound(winSound);
 
 		if (showDebugLog)
 		{
@@ -317,6 +363,8 @@ public class GameManager : MonoBehaviour
 		gameOverReason = reason;
 
 		StopGame();
+		PlayEndSound(gameOverSound);
+
 
 		if (showDebugLog)
 		{

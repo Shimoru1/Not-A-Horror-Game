@@ -1,29 +1,21 @@
 ﻿using UnityEngine;
 using System.Collections;
 using TMPro;
+using UnityEngine.UI;
 
 public class WeaponController : MonoBehaviour
 {
-    [System.Serializable]
-    public class CameraAmmo
-    {
-        [Tooltip("กระสุนในแม็กของกล้องนี้")]
-        public int magazineAmmo = 30;
-
-        [Tooltip("กระสุนสำรองของกล้องนี้")]
-        public int reserveAmmo = 0;
-    }
 
     [Header("Weapon Stats")]
     public int damage = 5;
     public float range = 100f;
     public int maxAmmo = 30;
 
-    [Header("5 Camera Ammo")]
-    [Tooltip("Element 0 = Camera 1, Element 1 = Camera 2 ... Element 4 = Camera 5")]
-    public CameraAmmo[] cameraAmmo = new CameraAmmo[5];
+	[Header("Ammo")]
+	public int magazineAmmo = 30;
+	public int reserveAmmo = 0;
 
-    [Header("Weapon Status")]
+	[Header("Weapon Status")]
     public bool canShoot = false;
     public LayerMask targetLayer;
 
@@ -58,27 +50,25 @@ public class WeaponController : MonoBehaviour
 
     private int currentCameraIndex = 0;
 
-	[Header("Ammo Mode")]
-	public bool shareAmmoAcrossCameras = true;
+	[Header("Low Ammo Warning")]
+	[SerializeField] private AudioClip lowAmmoSound;
+	[Tooltip("เตือนเมื่อกระสุนในแม็ก <= ค่านี้ และกระสุนสำรองเป็น 0")]
+	public int lowAmmoThreshold = 10;
+	[Tooltip("เล่นเสียงเตือนซ้ำทุกกี่วินาที (ควรไม่น้อยกว่าความยาวคลิป)")]
+	public float lowAmmoSoundInterval = 1.5f;
+
+	[Header("Low Ammo Effect")]
+	[SerializeField] private Image lowAmmoImage;
+	[SerializeField] private TextMeshProUGUI lowAmmoText;
+
+	[Tooltip("ความเร็วการ fade เข้า-ออก")]
+	public float lowAmmoPulseSpeed = 4f;
+	[Range(0f, 1f)] public float lowAmmoMaxAlpha = 0.6f;
+
+	private bool isLowAmmo = false;
+	private float lowAmmoSoundTimer = 0f;
 
 	private bool isPaused = false;
-
-	void Awake()
-    {
-        // ถ้ายังไม่มีข้อมูล 5 กล้อง ให้สร้างให้ครบ
-        if (cameraAmmo == null || cameraAmmo.Length != 5)
-        {
-            cameraAmmo = new CameraAmmo[5];
-        }
-
-        for (int i = 0; i < 5; i++)
-        {
-            if (cameraAmmo[i] == null)
-            {
-                cameraAmmo[i] = new CameraAmmo();
-            }
-        }
-    }
 
     void Start()
     {
@@ -110,8 +100,11 @@ public class WeaponController : MonoBehaviour
 		if (GameManager.Instance != null &&
 			!GameManager.Instance.IsPlaying())
 		{
+			StopLowAmmoEffect();
 			return;
 		}
+
+		UpdateLowAmmoEffect();
 
 		// ==============================
 		// WEAPON DISABLED
@@ -144,8 +137,8 @@ public class WeaponController : MonoBehaviour
 
 	public void EnableWeapon()
     {
-        canShoot = true;
         UpdateCurrentCameraIndex();
+        canShoot = true;
         UpdateAmmoUI();
     }
 
@@ -161,43 +154,31 @@ public class WeaponController : MonoBehaviour
 
     void Shoot()
     {
-        UpdateCurrentCameraIndex();
+		UpdateCurrentCameraIndex();
 
-        CameraAmmo ammo = GetCurrentAmmoData();
+		if (magazineAmmo <= 0)
+		{
+			Debug.Log("กระสุนหมด! กด R เพื่อ Reload");
+			return;
+		}
 
-        if (ammo == null)
-            return;
+		Camera activeCamera = GetActiveCamera();
 
-        if (ammo.magazineAmmo <= 0)
-        {
-            Debug.Log("กล้อง " + (currentCameraIndex + 1) + " กระสุนหมด! กด R เพื่อ Reload");
-            return;
-        }
+		if (activeCamera == null)
+			return;
 
-        Camera activeCamera = GetActiveCamera();
+		magazineAmmo--;
 
-        if (activeCamera == null)
-            return;
-
-        ammo.magazineAmmo--;
-
-        UpdateAmmoUI();
-
+		UpdateAmmoUI();
 		PlaySound(shootSound);
-
-		// ตรวจว่ากระสุนหมดทั้ง Magazine + Reserve หรือไม่
 		CheckAmmoGameOver();
 
-        Debug.Log(
-            "Bang! Camera " + (currentCameraIndex + 1) +
-            " = " + ammo.magazineAmmo + "/" + ammo.reserveAmmo
-        );
+		Debug.Log("Bang! Camera " + (currentCameraIndex + 1) +
+				  " = " + magazineAmmo + "/" + reserveAmmo);
 
-        Ray ray = activeCamera.ScreenPointToRay(
-            new Vector3(Screen.width / 2f, Screen.height / 2f, 0f)
-        );
+		Ray ray = activeCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
-        RaycastHit hit;
+		RaycastHit hit;
 
         Vector3 hitPosition =
             ray.origin + (ray.direction * range);
@@ -276,140 +257,87 @@ public class WeaponController : MonoBehaviour
 
     public void AddReserveAmmo(int amount)
     {
-        if (amount <= 0)
-            return;
+		if (amount <= 0)
+			return;
 
-        CameraAmmo ammo = GetCurrentAmmoData();
+		reserveAmmo += amount;
 
-        if (ammo == null)
-            return;
+		Debug.Log("ได้กระสุนสำรอง +" + amount +
+				  " → " + magazineAmmo + "/" + reserveAmmo);
 
-        ammo.reserveAmmo += amount;
+		UpdateAmmoUI();
+	}
 
-        Debug.Log(
-            "Camera " + (currentCameraIndex + 1) +
-            " ได้กระสุนสำรอง +" + amount +
-            " → " + ammo.magazineAmmo + "/" + ammo.reserveAmmo
-        );
+	public void AddReserveAmmoToAll(int amount)
+	{
+		AddReserveAmmo(amount);
+	}
+	// =========================================
+	// Reload
+	// =========================================
 
-        UpdateAmmoUI();
-    }
-
-    // =========================================
-    // Reload
-    // =========================================
-
-    public void StartReload()
+	public void StartReload()
     {
-        if (isReloading)
-            return;
+		if (isReloading)
+			return;
 
-        CameraAmmo ammo = GetCurrentAmmoData();
+		if (magazineAmmo >= maxAmmo)
+		{
+			Debug.Log("กระสุนเต็มอยู่แล้ว!");
+			return;
+		}
 
-        if (ammo == null)
-            return;
-
-        if (ammo.magazineAmmo >= maxAmmo)
-        {
-            Debug.Log(
-                "Camera " + (currentCameraIndex + 1) +
-                " กระสุนเต็มอยู่แล้ว!"
-            );
-            return;
-        }
-
-        if (ammo.reserveAmmo <= 0)
-        {
-            Debug.Log(
-                "Camera " + (currentCameraIndex + 1) +
-                " ไม่มีกระสุนสำรอง!"
-            );
-            return;
-        }
+		if (reserveAmmo <= 0)
+		{
+			Debug.Log("ไม่มีกระสุนสำรอง!");
+			return;
+		}
 
 		PlaySound(reloadSound);
 		StartCoroutine(Reload());
-    }
+	}
 
-    IEnumerator Reload()
+	IEnumerator Reload()
+	{
+		isReloading = true;
+
+		Debug.Log("กำลัง Reload...");
+
+		yield return new WaitForSeconds(reloadTime);
+
+		int neededAmmo = maxAmmo - magazineAmmo;
+		int ammoToLoad = Mathf.Min(neededAmmo, reserveAmmo);
+
+		magazineAmmo += ammoToLoad;
+		reserveAmmo -= ammoToLoad;
+
+		isReloading = false;
+
+		UpdateAmmoUI();
+		CheckAmmoGameOver();
+
+		Debug.Log("Reload เสร็จ! " + magazineAmmo + "/" + reserveAmmo);
+	}
+
+	// =========================================
+	// Camera Index
+	// =========================================
+
+	void UpdateCurrentCameraIndex()
     {
-        isReloading = true;
+		Camera activeCamera = GetActiveCamera();
 
-        int reloadCamera = currentCameraIndex;
+		if (activeCamera == null)
+			return;
 
-        Debug.Log(
-            "Camera " + (reloadCamera + 1) +
-            " กำลัง Reload..."
-        );
+		int newCameraIndex = GetCameraIndex(activeCamera);
 
-        yield return new WaitForSeconds(reloadTime);
-
-		// ถ้าเปลี่ยนกล้องระหว่าง Reload
-		// ให้เติมกล้องเดิมที่เริ่ม Reload
-		int ammoIdx = AmmoIndex(reloadCamera);
-		if (ammoIdx >= 0 && ammoIdx < cameraAmmo.Length && cameraAmmo[ammoIdx] != null)
+		if (newCameraIndex != currentCameraIndex)
 		{
-            CameraAmmo ammo = cameraAmmo[reloadCamera];
-
-            int neededAmmo = maxAmmo - ammo.magazineAmmo;
-            int ammoToLoad = Mathf.Min(neededAmmo, ammo.reserveAmmo);
-
-            ammo.magazineAmmo += ammoToLoad;
-            ammo.reserveAmmo -= ammoToLoad;
-        }
-
-        isReloading = false;
-
-        UpdateCurrentCameraIndex();
-        UpdateAmmoUI();
-
-        // ตรวจสถานะกระสุนหลัง Reload
-        CheckAmmoGameOver();
-
-        CameraAmmo current = GetCurrentAmmoData();
-
-        if (current != null)
-        {
-            Debug.Log(
-                "Reload เสร็จ! Camera " +
-                (currentCameraIndex + 1) +
-                " = " +
-                current.magazineAmmo +
-                "/" +
-                current.reserveAmmo
-            );
-        }
-    }
-
-    // =========================================
-    // Camera Index
-    // =========================================
-
-    void UpdateCurrentCameraIndex()
-    {
-        Camera activeCamera = GetActiveCamera();
-
-        if (activeCamera == null)
-            return;
-
-        int newCameraIndex = GetCameraIndex(activeCamera);
-
-        // อัปเดตทันทีเมื่อเปลี่ยนกล้อง
-        if (newCameraIndex != currentCameraIndex)
-        {
-            currentCameraIndex = newCameraIndex;
-            UpdateAmmoUI();
-
-            Debug.Log(
-                "เปลี่ยนเป็น Camera " +
-                (currentCameraIndex + 1) +
-                " → Ammo = " +
-                cameraAmmo[currentCameraIndex].magazineAmmo +
-                "/" +
-                cameraAmmo[currentCameraIndex].reserveAmmo
-            );
-        }
-    }
+			currentCameraIndex = newCameraIndex;
+			Debug.Log("เปลี่ยนเป็น Camera " + (currentCameraIndex + 1));
+		}
+	}
 
     int GetCameraIndex(Camera camera)
     {
@@ -435,21 +363,6 @@ public class WeaponController : MonoBehaviour
 
         return 0;
     }
-
-	int AmmoIndex(int camIndex)
-	{
-		return shareAmmoAcrossCameras ? 0 : camIndex;
-	}
-
-	CameraAmmo GetCurrentAmmoData()
-	{
-		if (cameraAmmo == null) return null;
-
-		int i = AmmoIndex(currentCameraIndex);
-		if (i < 0 || i >= cameraAmmo.Length) return null;
-
-		return cameraAmmo[i];
-	}
 
 	// =========================================
 	// Bullet Trail
@@ -499,42 +412,30 @@ public class WeaponController : MonoBehaviour
 
     void CheckAmmoGameOver()
     {
-        if (!ammoEmptyCausesGameOver)
-            return;
+		if (!ammoEmptyCausesGameOver)
+			return;
 
-        // ถ้าเกมจบไปแล้ว ไม่ต้องตรวจซ้ำ
-        if (GameManager.Instance != null &&
-            !GameManager.Instance.IsPlaying())
-        {
-            return;
-        }
+		if (GameManager.Instance != null &&
+			!GameManager.Instance.IsPlaying())
+		{
+			return;
+		}
 
-        CameraAmmo ammo = GetCurrentAmmoData();
+		currentCameraAmmoEmpty =
+			magazineAmmo <= 0 && reserveAmmo <= 0;
 
-        if (ammo == null)
-            return;
+		if (!currentCameraAmmoEmpty)
+			return;
 
-        // กระสุนหมดจริงเมื่อ Magazine และ Reserve เป็น 0 ทั้งคู่
-        currentCameraAmmoEmpty =
-            ammo.magazineAmmo <= 0 &&
-            ammo.reserveAmmo <= 0;
+		Debug.Log("GAME OVER! กระสุนหมดทั้ง Magazine และ Reserve!");
 
-        if (!currentCameraAmmoEmpty)
-            return;
-
-        Debug.Log(
-            "GAME OVER! Camera " +
-            (currentCameraIndex + 1) +
-            " กระสุนหมดทั้ง Magazine และ Reserve!"
-        );
-
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.GameOver(
-                GameManager.GameOverReason.OutOfAmmo
-            );
-        }
-    }
+		if (GameManager.Instance != null)
+		{
+			GameManager.Instance.GameOver(
+				GameManager.GameOverReason.OutOfAmmo
+			);
+		}
+	}
 
 
     // =========================================
@@ -543,81 +444,105 @@ public class WeaponController : MonoBehaviour
 
     void UpdateAmmoUI()
     {
-        if (ammoText == null)
-            return;
+		CheckLowAmmoWarning();
 
-        CameraAmmo ammo = GetCurrentAmmoData();
+		if (ammoText == null)
+			return;
 
-        if (ammo == null)
-            return;
-
-        ammoText.text =
-            ammo.magazineAmmo + "/" + ammo.reserveAmmo;
-    }
+		ammoText.text = magazineAmmo + "/" + reserveAmmo;
+	}
 	
 	public void ReduceAmmo(int cameraIndex, int amount)
 	{
 		if (amount <= 0)
 			return;
 
-		if (cameraAmmo == null ||
-			cameraIndex < 0 ||
-			cameraIndex >= cameraAmmo.Length)
-		{
-			Debug.LogWarning("ReduceAmmo: camera index ไม่ถูกต้อง = " + cameraIndex);
-			return;
-		}
-
-		CameraAmmo ammo = cameraAmmo[AmmoIndex(cameraIndex)];
-
-		if (ammo == null)
-			return;
-
 		int remaining = amount;
 
-		// หักจาก Reserve ก่อน
-		int fromReserve = Mathf.Min(remaining, ammo.reserveAmmo);
-		ammo.reserveAmmo -= fromReserve;
+		int fromReserve = Mathf.Min(remaining, reserveAmmo);
+		reserveAmmo -= fromReserve;
 		remaining -= fromReserve;
 
-		// ถ้ายังเหลือ ค่อยหักจาก Magazine
 		if (remaining > 0)
-		{
-			ammo.magazineAmmo =
-				Mathf.Max(0, ammo.magazineAmmo - remaining);
-		}
+			magazineAmmo = Mathf.Max(0, magazineAmmo - remaining);
 
-		Debug.Log(
-			"Camera " + (cameraIndex + 1) +
-			" ถูกหักกระสุน " + amount +
-			" → " + ammo.magazineAmmo + "/" + ammo.reserveAmmo
-		);
+		Debug.Log("ถูกหักกระสุน " + amount +
+				  " → " + magazineAmmo + "/" + reserveAmmo);
 
 		UpdateAmmoUI();
-
-		// ถ้ากระสุนของกล้องนี้หมดทั้งหมด ให้เช็กแพ้
-		if (cameraIndex == currentCameraIndex)
-			CheckAmmoGameOver();
+		CheckAmmoGameOver();
 	}
-	// เติมกระสุนสำรองให้ทุกกล้อง (ใช้กับกล่องกระสุน)
-	public void AddReserveAmmoToAll(int amount)
+
+	void CheckLowAmmoWarning()
 	{
-		if (amount <= 0 || cameraAmmo == null)
+		isLowAmmo =
+			reserveAmmo <= 0 &&
+			magazineAmmo > 0 &&
+			magazineAmmo <= lowAmmoThreshold;
+
+		if (!isLowAmmo)
+			StopLowAmmoEffect();
+	}
+	void UpdateLowAmmoEffect()
+	{
+		// เตือนเฉพาะตอนดูกล้อง
+		if (!isLowAmmo || !canShoot)
+		{
+			StopLowAmmoEffect();
+			return;
+		}
+
+		// เสียงเตือนวนซ้ำ
+		lowAmmoSoundTimer -= Time.deltaTime;
+
+		if (lowAmmoSoundTimer <= 0f)
+		{
+			PlaySound(lowAmmoSound);
+			lowAmmoSoundTimer = lowAmmoSoundInterval;
+		}
+
+		// ภาพและข้อความ fade in / fade out พร้อมกัน
+		float t = (Mathf.Sin(Time.time * lowAmmoPulseSpeed) + 1f) * 0.5f;
+
+		SetLowAmmoImageAlpha(t * lowAmmoMaxAlpha);
+		SetLowAmmoTextAlpha(t);
+
+		Debug.Log("isLow=" + isLowAmmo + " canShoot=" + canShoot +
+		  " img=" + (lowAmmoImage != null) + " txt=" + (lowAmmoText != null));
+	}
+
+	void StopLowAmmoEffect()
+	{
+		lowAmmoSoundTimer = 0f;
+		SetLowAmmoImageAlpha(0f);
+		SetLowAmmoTextAlpha(0f);
+	}
+
+	void SetLowAmmoImageAlpha(float alpha)
+	{
+		if (lowAmmoImage == null)
 			return;
 
-		if (shareAmmoAcrossCameras)
-		{
-			cameraAmmo[0].reserveAmmo += amount;
-		}
-		else
-		{
-			foreach (CameraAmmo ammo in cameraAmmo)
-				if (ammo != null) ammo.reserveAmmo += amount;
-		}
+		bool show = alpha > 0f;
+		if (lowAmmoImage.gameObject.activeSelf != show)
+			lowAmmoImage.gameObject.SetActive(show);
 
-		Debug.Log("ทุกกล้องได้กระสุนสำรอง +" + amount);
+		Color c = lowAmmoImage.color;
+		c.a = alpha;
+		lowAmmoImage.color = c;
+	}
+	void SetLowAmmoTextAlpha(float alpha)
+	{
+		if (lowAmmoText == null)
+			return;
 
-		UpdateAmmoUI();
+		bool show = alpha > 0f;
+		if (lowAmmoText.gameObject.activeSelf != show)
+			lowAmmoText.gameObject.SetActive(show);
+
+		Color c = lowAmmoText.color;
+		c.a = alpha;
+		lowAmmoText.color = c;
 	}
 
 	public void SetPaused(bool paused)
