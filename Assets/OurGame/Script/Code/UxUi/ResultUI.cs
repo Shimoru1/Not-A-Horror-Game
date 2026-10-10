@@ -74,7 +74,7 @@ public class ResultUI : MonoBehaviour
 			resultTitle.text = "YOU WIN!";
 
 		if (resultMessage != null)
-			resultMessage.text = "You survived until 06:00!";
+			resultMessage.text = "You saved the Gallery";
 	}
 
 

@@ -63,6 +63,16 @@ public class PauseMenu : MonoBehaviour
 				return;
 			}
 
+			// ถ้าเปิด Setting อยู่ ให้กลับไปหน้า Pause ก่อน
+			if (IsPaused &&
+				settingPanel != null &&
+				settingPanel.activeSelf)
+			{
+				CloseSetting();
+				return;
+			}
+
+			// ถ้าไม่ได้เปิด Setting ให้ทำงานตามปกติ
 			TogglePause();
 		}
 	}
@@ -102,6 +112,9 @@ public class PauseMenu : MonoBehaviour
 
 		GameManager.Instance.PauseGame();
 
+		// หยุดเสียงทั้งหมดระหว่าง Pause
+		AudioListener.pause = true;
+
 		if (pausePanel != null)
 			pausePanel.SetActive(true);
 
@@ -123,14 +136,14 @@ public class PauseMenu : MonoBehaviour
 		if (!IsPaused)
 			return;
 
+		AudioListener.pause = false;
+
 		PlayButtonSound();
 
 		IsPaused = false;
 
 		if (GameManager.Instance != null)
-		{
 			GameManager.Instance.ResumeGame();
-		}
 
 		if (pausePanel != null)
 			pausePanel.SetActive(false);
@@ -139,8 +152,19 @@ public class PauseMenu : MonoBehaviour
 			settingPanel.SetActive(false);
 
 		LockMouse();
+		StartCoroutine(LockMouseNextFrame());
 
 		Debug.Log("GAME RESUMED");
+	}
+
+	private System.Collections.IEnumerator LockMouseNextFrame()
+	{
+		// รอให้ Esc ถูกประมวลผลเสร็จก่อน แล้วล็อกซ้ำ
+		yield return null;
+		LockMouse();
+
+		yield return null;
+		LockMouse();
 	}
 
 
@@ -199,27 +223,30 @@ public class PauseMenu : MonoBehaviour
 
 	public void ExitGame()
 	{
+		AudioListener.pause = false;
+
 		PlayButtonSound();
 
-		// คืนเวลา
 		Time.timeScale = 1f;
-
-		// ปิดสถานะ Pause
 		IsPaused = false;
 
-		// ปลดล็อก Mouse ก่อนเปลี่ยน Scene
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
 
-		// โหลด Main Menu
 		SceneManager.LoadScene("MainMenu");
 	}
 
 	private void PlayButtonSound()
 	{
-		if (buttonClickAudio != null)
+		if (AudioManager.Instance != null)
 		{
-			buttonClickAudio.Play();
+			AudioManager.Instance.PlaySFX("ButtonSound1");
+		}
+		else
+		{
+			Debug.LogWarning(
+				"[PauseMenu] AudioManager.Instance is NULL!"
+			);
 		}
 	}
 

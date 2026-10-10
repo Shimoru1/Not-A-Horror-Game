@@ -34,12 +34,6 @@ public class WeaponController : MonoBehaviour
     [Header("UI References")]
     public TextMeshProUGUI ammoText;
 
-	[Header("Weapon Audio")]
-	[SerializeField] private AudioSource weaponAudioSource;
-
-	[SerializeField] private AudioClip shootSound;
-	[SerializeField] private AudioClip reloadSound;
-
     [Header("Ammo Game Over")]
     [Tooltip("ถ้ากระสุนของกล้องปัจจุบันหมดทั้ง Magazine และ Reserve ให้แพ้")]
     public bool ammoEmptyCausesGameOver = true;
@@ -49,10 +43,7 @@ public class WeaponController : MonoBehaviour
     private bool currentCameraAmmoEmpty = false;
 
     private int currentCameraIndex = 0;
-
-	[Header("Low Ammo Warning")]
-	[SerializeField] private AudioClip lowAmmoSound;
-	[Tooltip("เตือนเมื่อกระสุนในแม็ก <= ค่านี้ และกระสุนสำรองเป็น 0")]
+	
 	public int lowAmmoThreshold = 10;
 	[Tooltip("เล่นเสียงเตือนซ้ำทุกกี่วินาที (ควรไม่น้อยกว่าความยาวคลิป)")]
 	public float lowAmmoSoundInterval = 1.5f;
@@ -170,7 +161,7 @@ public class WeaponController : MonoBehaviour
 		magazineAmmo--;
 
 		UpdateAmmoUI();
-		PlaySound(shootSound);
+		PlaySound("ShotSound");
 		CheckAmmoGameOver();
 
 		Debug.Log("Bang! Camera " + (currentCameraIndex + 1) +
@@ -293,7 +284,7 @@ public class WeaponController : MonoBehaviour
 			return;
 		}
 
-		PlaySound(reloadSound);
+		PlaySound("ReloadSound");
 		StartCoroutine(Reload());
 	}
 
@@ -497,7 +488,7 @@ public class WeaponController : MonoBehaviour
 
 		if (lowAmmoSoundTimer <= 0f)
 		{
-			PlaySound(lowAmmoSound);
+			PlaySound("LowAmmoSound");
 			lowAmmoSoundTimer = lowAmmoSoundInterval;
 		}
 
@@ -554,14 +545,16 @@ public class WeaponController : MonoBehaviour
 			isReloading = false;
 		}
 	}
-	private void PlaySound(AudioClip clip)
+	private void PlaySound(string sfxId)
 	{
-		if (clip == null)
+		if (AudioManager.Instance == null)
+		{
+			Debug.LogWarning(
+				"[WeaponController] AudioManager.Instance is NULL!"
+			);
 			return;
+		}
 
-		if (weaponAudioSource == null)
-			return;
-
-		weaponAudioSource.PlayOneShot(clip);
+		AudioManager.Instance.PlaySFX(sfxId);
 	}
 }

@@ -427,9 +427,13 @@ public class ButtonManager : MonoBehaviour
 	}
 	private void PlayButtonSound()
 	{
-		if (buttonClickAudio != null)
+		if (AudioManager.Instance != null)
 		{
-			buttonClickAudio.Play();
+			AudioManager.Instance.PlaySFX("ButtonSound1");
+		}
+		else
+		{
+			Debug.LogError("[ButtonManager] AudioManager.Instance is NULL!");
 		}
 	}
 

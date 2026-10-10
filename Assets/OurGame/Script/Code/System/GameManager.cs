@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using TMPro;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
@@ -7,11 +8,20 @@ public class GameManager : MonoBehaviour
 	private GameState stateBeforePause = GameState.Playing;
 
 	[Header("AUDIO")]
-	[SerializeField] private AudioSource musicSource;   // ตั้ง Loop ได้ ปิด Play On Awake
+	[SerializeField] private AudioSource musicSource;
 	[SerializeField] private AudioSource sfxSource;
-	[SerializeField] private AudioClip startMusic;
-	[SerializeField] private AudioClip winSound;
-	[SerializeField] private AudioClip gameOverSound;
+
+	[Header("START / END MESSAGES")]
+	[SerializeField] private TextMeshProUGUI waitingText;
+	[SerializeField] private TextMeshProUGUI gameStartedText;
+
+	[SerializeField] private string messageSoundId = "TaskSound";
+	[SerializeField] private float messageDelay = 1f;
+
+	private bool messagesHidden = false;
+	private readonly Dictionary<TextMeshProUGUI, bool> desiredActive = new Dictionary<TextMeshProUGUI, bool>();
+
+	private bool isMessageVisible = false;
 
 	public enum GameState
 	{
@@ -46,6 +56,7 @@ public class GameManager : MonoBehaviour
 
 	[Tooltip("ติ๊กเพื่อข้ามเวลารอ 1 นาทีสำหรับการ Test")]
 	[SerializeField] private bool isTest = false;
+    public bool IsTestMode => isTest;
 
 	[Tooltip("Text ที่แสดงตอนใกล้เริ่มเกม")]
 	[SerializeField] private TextMeshProUGUI startText;
@@ -72,6 +83,8 @@ public class GameManager : MonoBehaviour
 
 		Instance = this;
 
+		AutoAssignAudioSources();
+
 		Time.timeScale = 1f;
 	}
 
@@ -81,27 +94,36 @@ public class GameManager : MonoBehaviour
 
 	private void Start()
 	{
-		// ซ่อน Text ก่อน
-		if (startText != null)
-		{
-			startText.gameObject.SetActive(false);
-		}
+		Debug.Log(
+			$"[GameManager] Start | isTest={isTest}, " +
+			$"delay={gameStartDelay}, timeScale={Time.timeScale}"
+		);
 
-		// =====================================================
-		// TEST MODE
-		// =====================================================
+		if (startText != null)
+			startText.gameObject.SetActive(false);
+
+		if (startTextCanvasGroup != null)
+			startTextCanvasGroup.alpha = 0f;
 
 		if (isTest)
 		{
+			Debug.Log("[GameManager] Test mode: start immediately");
+
+			if (AudioManager.Instance != null)
+			{
+				AudioManager.Instance.StopMusic();
+			}
+
 			StartGameImmediately();
+
+			StartCoroutine(ShowTestStartMessage());
+
 			return;
 		}
 
-		// =====================================================
-		// NORMAL MODE
-		// =====================================================
-
 		currentState = GameState.Starting;
+
+		Debug.Log("[GameManager] Starting countdown coroutine");
 
 		StartCoroutine(GameStartCountdown());
 	}
@@ -116,20 +138,19 @@ public class GameManager : MonoBehaviour
 
 		// ซ่อน Text ตอนเริ่ม
 		if (startText != null)
-		{
 			startText.gameObject.SetActive(false);
-		}
 
 		if (startTextCanvasGroup != null)
-		{
 			startTextCanvasGroup.alpha = 0f;
-		}
 
-		if (musicSource != null && startMusic != null)
+		// เล่นเพลงระหว่างรอ
+		if (AudioManager.Instance != null)
 		{
-			musicSource.clip = startMusic;
-			musicSource.loop = true;
-			musicSource.Play();
+			AudioManager.Instance.PlayMusic("Gallery");
+		}
+		else
+		{
+			Debug.LogError("[GameManager] AudioManager.Instance is NULL!");
 		}
 
 		if (showDebugLog)
@@ -139,8 +160,26 @@ public class GameManager : MonoBehaviour
 		}
 
 		// =====================================================
-		// รอจนเหลือ 5 วินาที
+		// หลังเริ่มระบบ 1 วินาที: ขึ้นข้อความและเล่นเสียง
 		// =====================================================
+
+		yield return new WaitForSeconds(1f);
+
+		ShowStartMessage(waitingText, true);
+
+		SetMessageActive(startText, true);
+		startText.text = "Explore The Gallery";
+
+		if (AudioManager.Instance != null)
+		{
+			AudioManager.Instance.PlaySFX("TaskSound");
+		}
+
+		// =====================================================
+		// รอจนเหลือ 5 วินาที (ระบบเดิม)
+		// =====================================================
+
+		remainingTime = Mathf.Max(0f, gameStartDelay - 1f);
 
 		while (remainingTime > warningTime)
 		{
@@ -149,19 +188,24 @@ public class GameManager : MonoBehaviour
 		}
 
 		// =====================================================
-		// แสดง Text
+		// เหลือ 5 วินาที: แสดง Text เดิม + Fade In
 		// =====================================================
+
+		SetMessageActive(waitingText, false);
+		SetMessageActive(gameStartedText, false);
 
 		if (startText != null)
 		{
 			startText.gameObject.SetActive(true);
 			startText.text = "Wait.. what was that..";
-			StartCoroutine(FadeOutMusic(warningTime));
 		}
 
-		// =====================================================
-		// FADE IN
-		// =====================================================
+		if (AudioManager.Instance != null)
+		{
+			StartCoroutine(
+				AudioManager.Instance.FadeOutMusic(warningTime)
+			);
+		}
 
 		if (startTextCanvasGroup != null)
 		{
@@ -181,7 +225,7 @@ public class GameManager : MonoBehaviour
 		}
 
 		// =====================================================
-		// รอจนถึงเวลาเริ่มเกม
+		// รอจนหมดเวลา
 		// =====================================================
 
 		while (remainingTime > 0f)
@@ -191,34 +235,16 @@ public class GameManager : MonoBehaviour
 		}
 
 		// =====================================================
-		// FADE OUT
+		// หมด 1 นาที: เปลี่ยนข้อความ + เล่นเสียงเดิม
 		// =====================================================
+
+		if (startText != null)
+			startText.gameObject.SetActive(false);
 
 		if (startTextCanvasGroup != null)
-		{
-			float timer = 0f;
-			float startAlpha = startTextCanvasGroup.alpha;
-
-			while (timer < fadeOutDuration)
-			{
-				timer += Time.deltaTime;
-
-				startTextCanvasGroup.alpha =
-					Mathf.Lerp(
-						startAlpha,
-						0f,
-						timer / fadeOutDuration
-					);
-
-				yield return null;
-			}
-
 			startTextCanvasGroup.alpha = 0f;
-		}
 
-		// =====================================================
-		// เริ่มเกม
-		// =====================================================
+		ShowStartMessage(gameStartedText, true);
 
 		StartGameImmediately();
 	}
@@ -230,18 +256,7 @@ public class GameManager : MonoBehaviour
 	private void StartGameImmediately()
 	{
 		currentState = GameState.Playing;
-
 		Time.timeScale = 1f;
-
-		if (startText != null)
-		{
-			startText.gameObject.SetActive(false);
-		}
-
-		if (startTextCanvasGroup != null)
-		{
-			startTextCanvasGroup.alpha = 0f;
-		}
 
 		if (showDebugLog)
 		{
@@ -271,13 +286,21 @@ public class GameManager : MonoBehaviour
 		musicSource.volume = startVolume;
 	}
 
-	private void PlayEndSound(AudioClip clip)
+	private void PlayEndSound(string sfxId)
 	{
 		if (musicSource != null)
 			musicSource.Stop();
 
-		if (sfxSource != null && clip != null)
-			sfxSource.PlayOneShot(clip);
+		if (AudioManager.Instance != null)
+		{
+			AudioManager.Instance.PlaySFX(sfxId);
+		}
+		else
+		{
+			Debug.LogWarning(
+				"[GameManager] AudioManager.Instance is NULL!"
+			);
+		}
 	}
 
 	// =========================================================
@@ -329,8 +352,9 @@ public class GameManager : MonoBehaviour
 		currentState = GameState.Win;
 		gameOverReason = GameOverReason.None;
 
+		HideStartMessage();
 		StopGame();
-		PlayEndSound(winSound);
+		PlayEndSound("WinGameSound");
 
 		if (showDebugLog)
 		{
@@ -362,8 +386,9 @@ public class GameManager : MonoBehaviour
 		currentState = GameState.GameOver;
 		gameOverReason = reason;
 
+		HideStartMessage();
 		StopGame();
-		PlayEndSound(gameOverSound);
+		PlayEndSound("LoseGameSound");
 
 
 		if (showDebugLog)
@@ -464,5 +489,130 @@ public class GameManager : MonoBehaviour
 	{
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
+	}
+
+	private void AutoAssignAudioSources()
+	{
+		// ถ้าไม่ได้กำหนด Music Source ให้ค้นหาอัตโนมัติ
+		if (musicSource == null)
+		{
+			AudioManager audioManager = AudioManager.Instance;
+
+			if (audioManager != null)
+			{
+				musicSource = audioManager.GetComponent<AudioSource>();
+			}
+
+			if (musicSource == null)
+			{
+				Debug.LogWarning(
+					"[GameManager] Music AudioSource is NULL. " +
+					"Music will be controlled through AudioManager."
+				);
+			}
+		}
+
+		// ถ้าไม่ได้กำหนด SFX Source ให้ค้นหาอัตโนมัติ
+		if (sfxSource == null)
+		{
+			AudioManager audioManager = AudioManager.Instance;
+
+			if (audioManager != null)
+			{
+				AudioSource[] sources =
+					audioManager.GetComponents<AudioSource>();
+
+				if (sources.Length >= 2)
+					sfxSource = sources[1];
+			}
+
+			if (sfxSource == null)
+			{
+				Debug.Log(
+					"[GameManager] SFX AudioSource will use AudioManager."
+				);
+			}
+		}
+	}
+
+	private void ShowStartMessage(TextMeshProUGUI targetText, bool playSound)
+	{
+		// ปิด Text ทั้งสองตัวก่อน
+		SetMessageActive(waitingText, false);
+		SetMessageActive(gameStartedText, false);
+		if (targetText != null) SetMessageActive(targetText, true);
+
+		isMessageVisible = true;
+
+		if (playSound && AudioManager.Instance != null)
+		{
+			AudioManager.Instance.PlaySFX(messageSoundId);
+		}
+	}
+
+	private void HideStartMessage()
+	{
+		isMessageVisible = false;
+
+		SetMessageActive(waitingText, false);
+		SetMessageActive(gameStartedText, false);
+		SetMessageActive(startText, false);
+	}
+
+	private System.Collections.IEnumerator ShowTestStartMessage()
+	{
+		yield return new WaitForSeconds(messageDelay);
+
+		ShowStartMessage(gameStartedText, true);
+	}
+	public void SetStartTextVisible(bool visible)
+	{
+		SetMessageActive(startText, visible);
+	}
+
+	private void SetMessageActive(TextMeshProUGUI t, bool active)
+	{
+		if (t == null) return;
+
+		if (messagesHidden)
+		{
+			desiredActive[t] = active;   // จดไว้ก่อน ยังไม่แสดง
+			return;
+		}
+
+		t.gameObject.SetActive(active);
+	}
+
+	// เรียกตอนเข้า CCTV
+	public void HideMessagesForCCTV()
+	{
+		if (messagesHidden) return;
+
+		TextMeshProUGUI[] all = { waitingText, gameStartedText, startText };
+
+		foreach (var t in all)
+		{
+			if (t == null) continue;
+			desiredActive[t] = t.gameObject.activeSelf;
+			t.gameObject.SetActive(false);
+		}
+
+		messagesHidden = true;
+	}
+
+	// เรียกตอนออกจาก CCTV
+	public void RestoreMessagesAfterCCTV()
+	{
+		if (!messagesHidden) return;
+
+		messagesHidden = false;
+
+		foreach (var pair in desiredActive)
+		{
+			if (pair.Key != null)
+				pair.Key.gameObject.SetActive(pair.Value);
+		}
+
+		desiredActive.Clear();
 	}
 }

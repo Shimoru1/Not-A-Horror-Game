@@ -59,8 +59,10 @@ public class CCTVManager : MonoBehaviour
     private Transform playerTransform;
 
     public static CCTVManager Instance;
+	[Header("Start Text")]
+	[SerializeField] private TextMeshProUGUI startText;
 
-    private bool powerOff = false;
+	private bool powerOff = false;
 
 
     private void Awake()
@@ -263,6 +265,9 @@ public class CCTVManager : MonoBehaviour
         isWatchingCCTV = true;
 		SetPlayerMovement(false);
 
+		if (GameManager.Instance != null)
+			GameManager.Instance.HideMessagesForCCTV();
+
 		if (repairIcon != null)
             repairIcon.SetActive(false);
 
@@ -301,43 +306,47 @@ public class CCTVManager : MonoBehaviour
     }
 
 
-    // =========================================================
-    // EXIT CCTV
-    // =========================================================
+	// =========================================================
+	// EXIT CCTV
+	// =========================================================
 
-    private void ExitCCTV()
-    {
-        Debug.Log("EXIT CCTV");
+	private void ExitCCTV()
+	{
+		Debug.Log("EXIT CCTV");
 
-        isWatchingCCTV = false;
+		isWatchingCCTV = false;
 		SetPlayerMovement(true);
+
+		// เปิด Start Text กลับ ถ้าเกมยังอยู่ช่วง Starting
+		if (GameManager.Instance != null)
+			GameManager.Instance.RestoreMessagesAfterCCTV();
 
 		DisableAllCCTVCameras();
 
-        if (cctvUI != null)
-            cctvUI.SetActive(false);
+		if (cctvUI != null)
+			cctvUI.SetActive(false);
 
-        if (blackScreen != null)
-            blackScreen.SetActive(false);
+		if (blackScreen != null)
+			blackScreen.SetActive(false);
 
-        if (cameraWeapon != null)
-            cameraWeapon.DisableWeapon();
+		if (cameraWeapon != null)
+			cameraWeapon.DisableWeapon();
 
-        if (dirtOverlay != null)
-            dirtOverlay.SetCamera(null);
+		if (dirtOverlay != null)
+			dirtOverlay.SetCamera(null);
 
-        RestoreCameraStates();
+		RestoreCameraStates();
 
-        if (repairIcon != null)
-            repairIcon.SetActive(powerOff);
-    }
+		if (repairIcon != null)
+			repairIcon.SetActive(powerOff);
+	}
 
 
-    // =========================================================
-    // SAVE CAMERA STATES
-    // =========================================================
+	// =========================================================
+	// SAVE CAMERA STATES
+	// =========================================================
 
-    private void SaveCameraStates()
+	private void SaveCameraStates()
     {
         cameraStates.Clear();
 
@@ -455,10 +464,13 @@ public class CCTVManager : MonoBehaviour
                 cctvCameras.Length - 1;
         }
 
-		if (audioSource != null && switchCameraSound != null)
-			audioSource.PlayOneShot(switchCameraSound);
+		if (AudioManager.Instance != null)
+		{
+			AudioManager.Instance.PlaySFX("CamSwitchSound");
+		}
+
 		ActivateCurrentCamera();
-    }
+	}
 
 
     // =========================================================
@@ -748,8 +760,13 @@ public class CCTVManager : MonoBehaviour
 
 		bool finished = target.Wipe(wipeAmount);
 
-		if (finished && audioSource != null && cleanDoneSound != null)
-			audioSource.PlayOneShot(cleanDoneSound);
+		if (finished)
+		{
+			if (AudioManager.Instance != null)
+			{
+				AudioManager.Instance.PlaySFX("CleaningSound");
+			}
+		}
 	}
 
 	private CCTVCleaningTarget GetCurrentTarget()

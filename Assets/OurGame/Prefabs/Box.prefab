@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GlowPulse
   glowColor: {r: 0.2, g: 0.7, b: 1, a: 1}
-  pulseSpeed: 1
+  pulseSpeed: 5
   minEmission: 0.5
   maxEmission: 2
   useLight: 1

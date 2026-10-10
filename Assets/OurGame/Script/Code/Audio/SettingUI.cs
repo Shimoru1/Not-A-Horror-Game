@@ -3,61 +3,109 @@ using UnityEngine.UI;
 
 public class SettingUI : MonoBehaviour
 {
-	[Header("Settings")]
+	[Header("Panels")]
 	[SerializeField] private GameObject settingsPanel;
-	[SerializeField] private Slider volumeSlider;
+	[SerializeField] private GameObject pausePanel;
+
+
+	[Header("Sliders")]
+	[SerializeField] private Slider masterSlider;
+	[SerializeField] private Slider musicSlider;
+	[SerializeField] private Slider sfxSlider;
+
+	[Header("Scroll (ไม่ใส่ก็ได้)")]
+	[SerializeField] private ScrollRect scrollRect;
 
 	private void Start()
 	{
 		if (settingsPanel != null)
 			settingsPanel.SetActive(false);
 
-		if (volumeSlider != null)
+		if (AudioManager.Instance == null)
 		{
-			volumeSlider.minValue = 0f;
-			volumeSlider.maxValue = 1f;
-
-			float volume = (AudioManager.Instance != null)
-				? AudioManager.Instance.GetMusicVolume()
-				: 1f;
-
-			volumeSlider.SetValueWithoutNotify(volume);
-			volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
+			Debug.LogError("SettingUI: ไม่พบ AudioManager ใน Scene");
 		}
+
+		SetupSlider(masterSlider, OnMasterChanged);
+		SetupSlider(musicSlider, OnMusicChanged);
+		SetupSlider(sfxSlider, OnSFXChanged);
+
+		RefreshSliders();
+	}
+
+	private void SetupSlider(Slider slider, UnityEngine.Events.UnityAction<float> callback)
+	{
+		if (slider == null) return;
+
+		slider.minValue = 0f;
+		slider.maxValue = 1f;
+		slider.onValueChanged.AddListener(callback);
+	}
+
+	private void RefreshSliders()
+	{
+		AudioManager am = AudioManager.Instance;
+
+		if (masterSlider != null)
+			masterSlider.SetValueWithoutNotify(am != null ? am.GetMasterVolume() : 1f);
+
+		if (musicSlider != null)
+			musicSlider.SetValueWithoutNotify(am != null ? am.GetMusicVolume() : 1f);
+
+		if (sfxSlider != null)
+			sfxSlider.SetValueWithoutNotify(am != null ? am.GetSFXVolume() : 1f);
 	}
 
 	public void OpenSettings()
 	{
+		if (pausePanel != null)
+			pausePanel.SetActive(false);
+
 		if (settingsPanel != null)
 			settingsPanel.SetActive(true);
 
-		if (volumeSlider != null && AudioManager.Instance != null)
+		RefreshSliders();
+
+		if (scrollRect != null)
 		{
-			volumeSlider.SetValueWithoutNotify(
-				AudioManager.Instance.GetMusicVolume()
-			);
+			Canvas.ForceUpdateCanvases();
+			scrollRect.verticalNormalizedPosition = 1f;
 		}
 	}
 
 	public void CloseSettings()
 	{
+		// ปิดหน้า Settings
 		if (settingsPanel != null)
 			settingsPanel.SetActive(false);
+
+		// กลับไปหน้า Pause Menu
+		if (pausePanel != null)
+			pausePanel.SetActive(true);
 	}
 
-	private void OnVolumeChanged(float value)
+	private void OnMasterChanged(float v)
 	{
 		if (AudioManager.Instance != null)
-		{
-			AudioManager.Instance.SetMusicVolume(value);
-		}
+			AudioManager.Instance.SetMasterVolume(v);
+	}
+
+	private void OnMusicChanged(float v)
+	{
+		if (AudioManager.Instance != null)
+			AudioManager.Instance.SetMusicVolume(v);
+	}
+
+	private void OnSFXChanged(float v)
+	{
+		if (AudioManager.Instance != null)
+			AudioManager.Instance.SetSFXVolume(v);
 	}
 
 	private void OnDestroy()
 	{
-		if (volumeSlider != null)
-		{
-			volumeSlider.onValueChanged.RemoveListener(OnVolumeChanged);
-		}
+		if (masterSlider != null) masterSlider.onValueChanged.RemoveListener(OnMasterChanged);
+		if (musicSlider != null) musicSlider.onValueChanged.RemoveListener(OnMusicChanged);
+		if (sfxSlider != null) sfxSlider.onValueChanged.RemoveListener(OnSFXChanged);
 	}
 }

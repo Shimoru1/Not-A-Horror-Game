@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 public class AmmoBoxSpawner : MonoBehaviour
 {
@@ -17,12 +18,25 @@ public class AmmoBoxSpawner : MonoBehaviour
 	public KeyCode pickupKey = KeyCode.E;
 	public WeaponController weapon;
 
+	[Header("Pickup Text")]
+	public TextMeshProUGUI ammoPickupText;
+	public float textMoveUpDistance = 80f;
+	public float textFadeDuration = 1.2f;
+
+	private RectTransform ammoTextRect;
+	private CanvasGroup ammoTextCanvasGroup;
+	private Coroutine ammoTextCoroutine;
+	private Vector2 ammoTextStartPosition;
+
 	[Header("UI")]
 	public GameObject eToPickupUI;
 
 	[Header("Audio")]
 	public AudioSource audioSource;
 	public AudioClip pickupSound;
+	public AudioClip spawnSound;          // เสียงตอนกล่องเกิด
+	[Range(0f, 1f)]
+	public float spawnSoundVolume = 1f;
 
 	private GameObject activeBox;
 	private float spawnTimer;
@@ -43,6 +57,18 @@ public class AmmoBoxSpawner : MonoBehaviour
 			eToPickupUI.SetActive(false);
 
 		ResetSpawnTimer();
+
+		if (ammoPickupText != null)
+		{
+			ammoTextRect = ammoPickupText.GetComponent<RectTransform>();
+
+			ammoTextCanvasGroup = ammoPickupText.GetComponent<CanvasGroup>();
+
+			if (ammoTextCanvasGroup == null)
+				ammoTextCanvasGroup = ammoPickupText.gameObject.AddComponent<CanvasGroup>();
+
+			ammoPickupText.gameObject.SetActive(false);
+		}
 	}
 
 	private void Update()
@@ -108,6 +134,8 @@ public class AmmoBoxSpawner : MonoBehaviour
 
 		lifeTimer = boxLifetime;
 
+		PlaySpawnSound(point.position);
+
 		Debug.Log("Ammo box spawned at " + point.name);
 	}
 
@@ -121,8 +149,19 @@ public class AmmoBoxSpawner : MonoBehaviour
 				weapon.AddReserveAmmo(ammoAmount);
 		}
 
-		if (audioSource != null && pickupSound != null)
-			audioSource.PlayOneShot(pickupSound);
+		ShowAmmoPickupText(ammoAmount);
+
+		// เสียงตอนเก็บกล่องกระสุน
+		if (AudioManager.Instance != null)
+		{
+			AudioManager.Instance.PlaySFX("CollectSound1");
+		}
+		else
+		{
+			Debug.LogWarning(
+				"[AmmoBoxSpawner] AudioManager.Instance is NULL!"
+			);
+		}
 
 		Debug.Log("Ammo box collected +" + ammoAmount);
 
@@ -174,5 +213,61 @@ public class AmmoBoxSpawner : MonoBehaviour
 	{
 		if (eToPickupUI != null && eToPickupUI.activeSelf != active)
 			eToPickupUI.SetActive(active);
+	}
+
+	private void PlaySpawnSound(Vector3 position)
+	{
+		if (AudioManager.Instance != null)
+		{
+			AudioManager.Instance.PlaySFX("ItemSpawnedSound");
+		}
+		else
+		{
+			Debug.LogWarning(
+				"[AmmoBoxSpawner] AudioManager.Instance is NULL!"
+			);
+		}
+	}
+	private void ShowAmmoPickupText(int amount)
+	{
+		if (ammoPickupText == null)
+			return;
+
+		if (ammoTextCoroutine != null)
+			StopCoroutine(ammoTextCoroutine);
+
+		ammoPickupText.gameObject.SetActive(true);
+		ammoPickupText.text = "+" + amount + " Ammo";
+
+		ammoTextStartPosition = ammoTextRect.anchoredPosition;
+		ammoTextCanvasGroup.alpha = 1f;
+
+		ammoTextCoroutine = StartCoroutine(AnimateAmmoText());
+	}
+
+	private System.Collections.IEnumerator AnimateAmmoText()
+	{
+		float timer = 0f;
+
+		while (timer < textFadeDuration)
+		{
+			timer += Time.unscaledDeltaTime;
+
+			float progress = Mathf.Clamp01(timer / textFadeDuration);
+
+			ammoTextRect.anchoredPosition =
+				ammoTextStartPosition +
+				Vector2.up * (textMoveUpDistance * progress);
+
+			ammoTextCanvasGroup.alpha = 1f - progress;
+
+			yield return null;
+		}
+
+		ammoTextCanvasGroup.alpha = 0f;
+		ammoTextRect.anchoredPosition = ammoTextStartPosition;
+		ammoPickupText.gameObject.SetActive(false);
+
+		ammoTextCoroutine = null;
 	}
 }

@@ -34,16 +34,24 @@ public class GameTimeUI : MonoBehaviour
     }
 
 
-    private void Update()
-    {
-        // ป้องกัน NullReferenceException
-        if (gameTime == null)
-            return;
+	private void Update()
+	{
+		if (gameTime == null)
+			return;
 
-        if (timeText == null)
-            return;
+		if (timeText == null)
+			return;
 
-        // แสดงเวลา
-        timeText.text = "● REC " + gameTime.GetGameTime();
-    }
+		timeText.text = "● REC " + FormatHour(gameTime.GetCurrentTime());
+	}
+
+	private string FormatHour(float time)
+	{
+		int hour = Mathf.FloorToInt(time);
+
+		// ชั่วโมง 0 แสดงเป็น 12AM ที่เหลือแสดงตามเลขเดิม
+		int displayHour = hour == 0 ? 12 : hour;
+
+		return displayHour + " AM";
+	}
 }

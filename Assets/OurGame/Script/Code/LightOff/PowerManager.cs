@@ -31,6 +31,7 @@ public class PowerManager : MonoBehaviour
 
 	[Header("Player")]
 	public Transform player;
+
 	[Header("Player Camera")]
 	[SerializeField] private Camera playerCamera;
 
@@ -62,18 +63,13 @@ public class PowerManager : MonoBehaviour
 	[Tooltip("GameObject ที่ต้องปิดตอนเกิดไฟดับ")]
 	public GameObject[] powerObjects;
 
-	[Header("Power Off Sound")]
-	public AudioSource powerOffAudio;
-
-	[Header("Repair Sound")]
-	public AudioSource repairAudio;
-
-	[Header("Power On Sound")]
-	public AudioSource powerOnAudio;
-
 	public bool IsPowerOff { get; private set; }
 
 	private bool isRepairing = false;
+
+	private const string PowerOffSFX = "PowerOffSound";
+	private const string PowerOnSFX = "PowerOnSound";
+	private const string RepairingSFX = "RepairingSound";
 
 	// =========================================================
 	// AWAKE
@@ -81,7 +77,23 @@ public class PowerManager : MonoBehaviour
 
 	private void Awake()
 	{
+		if (Instance != null && Instance != this)
+		{
+			Debug.LogWarning("[PowerManager] Duplicate instance destroyed.");
+			Destroy(gameObject);
+			return;
+		}
+
 		Instance = this;
+	}
+
+	private void OnDestroy()
+	{
+		if (Instance == this)
+		{
+			StopRepairingSound();
+			Instance = null;
+		}
 	}
 
 	// =========================================================
@@ -111,6 +123,8 @@ public class PowerManager : MonoBehaviour
 		if (GameManager.Instance != null &&
 			!GameManager.Instance.IsPlaying())
 		{
+			StopRepairingSound();
+			isRepairing = false;
 			return;
 		}
 
@@ -131,11 +145,9 @@ public class PowerManager : MonoBehaviour
 
 	private void DrainPower()
 	{
-		powerPercent -=
-			powerDrainPerSecond * Time.deltaTime;
+		powerPercent -= powerDrainPerSecond * Time.deltaTime;
 
-		powerPercent =
-			Mathf.Clamp(powerPercent, 0f, 100f);
+		powerPercent = Mathf.Clamp(powerPercent, 0f, 100f);
 
 		if (powerPercent <= powerOffPercent)
 		{
@@ -153,17 +165,16 @@ public class PowerManager : MonoBehaviour
 			return;
 
 		IsPowerOff = true;
-
 		powerPercent = 0f;
+
+		isRepairing = false;
+		StopRepairingSound();
 
 		Debug.Log("POWER OFF!");
 
 		DisablePowerObjects();
 
-		if (powerOffAudio != null)
-		{
-			powerOffAudio.Play();
-		}
+		PlaySFX(PowerOffSFX);
 
 		if (repairStation != null)
 		{
@@ -189,7 +200,6 @@ public class PowerManager : MonoBehaviour
 
 	private void DisablePowerObjects()
 	{
-		// ปิด Light
 		if (lights != null)
 		{
 			foreach (Light lightObject in lights)
@@ -201,7 +211,6 @@ public class PowerManager : MonoBehaviour
 			}
 		}
 
-		// ปิด Object อื่น
 		if (powerObjects != null)
 		{
 			foreach (GameObject obj in powerObjects)
@@ -214,158 +223,9 @@ public class PowerManager : MonoBehaviour
 		}
 	}
 
-	// =========================================================
-	// REPAIR
-	// =========================================================
-
-	private void HandleRepair()
-	{
-		if (player == null ||
-			repairStation == null)
-		{
-			isRepairing = false;
-			return;
-		}
-
-
-		// =====================================================
-		// ตรวจระยะ
-		// =====================================================
-
-		float distance = Vector3.Distance(
-			player.position,
-			repairStation.transform.position
-		);
-
-		bool nearRepairStation =
-			distance <= repairDistance;
-
-
-		// =====================================================
-		// ต้องอยู่ใกล้ + กด E + Power ยังไม่เต็ม
-		// =====================================================
-
-		if (nearRepairStation &&
-			Input.GetKey(KeyCode.E) &&
-			powerPercent < repairRequiredPercent)
-		{
-			isRepairing = true;
-
-
-			// =================================================
-			// เพิ่ม Power
-			// =================================================
-
-			powerPercent +=
-				repairSpeed * Time.deltaTime;
-
-			powerPercent = Mathf.Clamp(
-				powerPercent,
-				0f,
-				repairRequiredPercent
-			);
-
-
-			// =================================================
-			// เสียงซ่อม
-			// =================================================
-
-			if (repairAudio != null &&
-				!repairAudio.isPlaying)
-			{
-				repairAudio.Play();
-			}
-
-
-			// =================================================
-			// ซ่อมเต็ม
-			// =================================================
-
-			if (powerPercent >= repairRequiredPercent)
-			{
-				powerPercent =
-					repairRequiredPercent;
-
-				// ถ้าไฟดับ → เปิดไฟกลับ
-				if (IsPowerOff)
-				{
-					PowerRestored();
-				}
-				else
-				{
-					// ไฟยังไม่ดับ แค่ซ่อมเต็ม
-					isRepairing = false;
-
-					if (repairAudio != null)
-					{
-						repairAudio.Stop();
-					}
-				}
-			}
-		}
-		else
-		{
-			isRepairing = false;
-
-
-			// =================================================
-			// หยุดเสียงซ่อม
-			// =================================================
-
-			if (repairAudio != null &&
-				repairAudio.isPlaying)
-			{
-				repairAudio.Stop();
-			}
-		}
-	}
-
-
-	// =========================================================
-	// POWER RESTORED
-	// =========================================================
-
-	private void PowerRestored()
-	{
-		Debug.Log("POWER RESTORED!");
-
-		powerPercent = 100f;
-
-		IsPowerOff = false;
-
-		isRepairing = false;
-
-		EnablePowerObjects();
-
-		if (repairAudio != null)
-		{
-			repairAudio.Stop();
-		}
-
-		if (powerOnAudio != null)
-		{
-			powerOnAudio.Play();
-		}
-
-		if (powerOffVignette != null)
-		{
-			powerOffVignette.SetActive(false);
-		}
-
-		if (CCTVManager.Instance != null)
-		{
-			CCTVManager.Instance.OnPowerRestored();
-		}
-
-		UpdatePowerUI();
-	}
-
-	// =========================================================
-	// TURN ON LIGHTS
-	// =========================================================
-
 	private void EnablePowerObjects()
 	{
+		// เปิดไฟทั้งหมดกลับมา
 		if (lights != null)
 		{
 			foreach (Light lightObject in lights)
@@ -377,6 +237,7 @@ public class PowerManager : MonoBehaviour
 			}
 		}
 
+		// เปิด GameObject ที่ถูกปิดตอนเกิดไฟดับ
 		if (powerObjects != null)
 		{
 			foreach (GameObject obj in powerObjects)
@@ -390,24 +251,143 @@ public class PowerManager : MonoBehaviour
 	}
 
 	// =========================================================
+	// REPAIR
+	// =========================================================
+
+	private void HandleRepair()
+	{
+		if (player == null || repairStation == null)
+		{
+			isRepairing = false;
+			StopRepairingSound();
+			return;
+		}
+
+		float distance = Vector3.Distance(
+			player.position,
+			repairStation.transform.position
+		);
+
+		bool nearRepairStation = distance <= repairDistance;
+
+		bool canRepair =
+			nearRepairStation &&
+			Input.GetKey(KeyCode.E) &&
+			powerPercent < repairRequiredPercent;
+
+		if (!canRepair)
+		{
+			isRepairing = false;
+			StopRepairingSound();
+			return;
+		}
+
+		isRepairing = true;
+
+		powerPercent = Mathf.Min(
+			powerPercent + repairSpeed * Time.deltaTime,
+			repairRequiredPercent
+		);
+
+		if (AudioManager.Instance != null)
+		{
+			AudioManager.Instance.PlayLoopSFX(RepairingSFX);
+		}
+
+		if (powerPercent >= repairRequiredPercent)
+		{
+			powerPercent = repairRequiredPercent;
+			isRepairing = false;
+
+			StopRepairingSound();
+
+			// เรียกเมื่อไฟดับอยู่เท่านั้น
+			if (IsPowerOff)
+			{
+				PowerRestored();
+			}
+		}
+	}
+
+	// =========================================================
+	// POWER RESTORED
+	// =========================================================
+
+	private void PowerRestored()
+	{
+		if (!IsPowerOff)
+			return;
+
+		Debug.Log("[PowerManager] POWER RESTORED!");
+
+		powerPercent = 100f;
+		IsPowerOff = false;
+		isRepairing = false;
+
+		// หยุดเฉพาะเสียงซ่อม
+		StopRepairingSound();
+
+		// เปิดไฟและอุปกรณ์กลับมา
+		EnablePowerObjects();
+
+		// เล่นเสียงเปิดไฟ
+		if (AudioManager.Instance != null)
+		{
+			AudioManager.Instance.PlaySFX("PowerOnSound");
+		}
+		else
+		{
+			Debug.LogError(
+				"[PowerManager] AudioManager.Instance is NULL!"
+			);
+		}
+
+		if (powerOffVignette != null)
+			powerOffVignette.SetActive(false);
+
+		if (CCTVManager.Instance != null)
+			CCTVManager.Instance.OnPowerRestored();
+
+		UpdatePowerUI();
+	}
+
+	// =========================================================
+	// AUDIO MANAGER HELPERS
+	// =========================================================
+
+	private void PlaySFX(string id)
+	{
+		if (AudioManager.Instance != null)
+		{
+			AudioManager.Instance.PlaySFX(id);
+		}
+		else
+		{
+			Debug.LogWarning(
+				"[PowerManager] AudioManager.Instance is null. SFX: " + id
+			);
+		}
+	}
+
+	private void StopRepairingSound()
+	{
+		if (AudioManager.Instance != null)
+		{
+			AudioManager.Instance.StopSFX(RepairingSFX);
+		}
+	}
+
+	// =========================================================
 	// POWER UI
 	// =========================================================
 
 	private void UpdatePowerUI()
 	{
-		// =====================================================
-		// ตรวจ Reference
-		// =====================================================
-
 		if (player == null || repairStation == null)
 		{
 			HideAllRepairUI();
 			return;
 		}
-
-		// =====================================================
-		// CCTV
-		// =====================================================
 
 		if (CCTVManager.Instance != null &&
 			CCTVManager.Instance.isWatchingCCTV)
@@ -416,32 +396,20 @@ public class PowerManager : MonoBehaviour
 			return;
 		}
 
-		// =====================================================
-		// ตรวจระยะ
-		// =====================================================
-
 		float distance = Vector3.Distance(
 			player.position,
 			repairStation.transform.position
 		);
 
-		bool nearRepairStation =
-			distance <= repairDistance;
+		bool nearRepairStation = distance <= repairDistance;
 
-		// =====================================================
-		// POWER %
-		// =====================================================
-
-		bool showPowerUI =
-			nearRepairStation;
+		bool showPowerUI = nearRepairStation;
 
 		if (powerUI != null)
 		{
 			powerUI.SetActive(showPowerUI);
 		}
 
-		// สำคัญมาก!
-		// สั่ง powerText โดยตรงด้วย
 		if (powerText != null)
 		{
 			powerText.gameObject.SetActive(showPowerUI);
@@ -455,28 +423,18 @@ public class PowerManager : MonoBehaviour
 			}
 		}
 
-		// =====================================================
-		// REPAIR E UI
-		// =====================================================
-
 		bool showRepairUI =
 			nearRepairStation &&
 			powerPercent < repairRequiredPercent;
-
 
 		if (repairUI != null)
 		{
 			repairUI.SetActive(showRepairUI);
 		}
 
-		// =====================================================
-		// REPAIR ICON
-		// =====================================================
-
 		bool showRepairIcon =
 			IsPowerOff &&
 			!nearRepairStation;
-
 
 		if (repairIcon != null)
 		{
@@ -489,18 +447,15 @@ public class PowerManager : MonoBehaviour
 		if (powerText == null)
 			return;
 
-		// แปลง 0-100 ให้เป็น 0-1
-		float normalizedPower =
-			Mathf.Clamp01(powerPercent / 100f);
+		float normalizedPower = Mathf.Clamp01(powerPercent / 100f);
 
-		// 0% = แดง
-		// 100% = เขียว
 		powerText.color = Color.Lerp(
 			emptyPowerColor,
 			fullPowerColor,
 			normalizedPower
 		);
 	}
+
 	private void UpdatePowerTextPosition()
 	{
 		if (powerText == null ||
@@ -516,6 +471,7 @@ public class PowerManager : MonoBehaviour
 		powerText.transform.position =
 			screenPosition + (Vector3)powerTextOffset;
 	}
+
 	private void HideAllRepairUI()
 	{
 		if (powerUI != null)
