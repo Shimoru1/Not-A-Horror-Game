@@ -31,7 +31,10 @@ public class WeaponController : MonoBehaviour
     public float reloadTime = 1f;
     private bool isReloading = false;
 
-    [Header("UI References")]
+	[Header("Reload UI")]
+	[SerializeField] private Image reloadImage;
+
+	[Header("UI References")]
     public TextMeshProUGUI ammoText;
 
     [Header("Ammo Game Over")]
@@ -63,10 +66,11 @@ public class WeaponController : MonoBehaviour
 
     void Start()
     {
-        UpdateCurrentCameraIndex();
-        UpdateAmmoUI();
+		UpdateCurrentCameraIndex();
+		UpdateAmmoUI();
+		HideReloadUI();
 
-        if (bulletTrail != null)
+		if (bulletTrail != null)
         {
             bulletTrail.enabled = false;
         }
@@ -131,25 +135,27 @@ public class WeaponController : MonoBehaviour
         UpdateCurrentCameraIndex();
         canShoot = true;
         UpdateAmmoUI();
-    }
+		TryAutoReload();
+	}
 
-    public void DisableWeapon()
-    {
-        canShoot = false;
-        isReloading = false;
-    }
+	public void DisableWeapon()
+	{
+		canShoot = false;
+		CancelReload();
+	}
 
-    // =========================================
-    // Shoot
-    // =========================================
+	// =========================================
+	// Shoot
+	// =========================================
 
-    void Shoot()
+	void Shoot()
     {
 		UpdateCurrentCameraIndex();
 
 		if (magazineAmmo <= 0)
 		{
-			Debug.Log("กระสุนหมด! กด R เพื่อ Reload");
+			Debug.Log("กระสุนหมด!");
+			TryAutoReload();
 			return;
 		}
 
@@ -163,6 +169,7 @@ public class WeaponController : MonoBehaviour
 		UpdateAmmoUI();
 		PlaySound("ShotSound");
 		CheckAmmoGameOver();
+		TryAutoReload();
 
 		Debug.Log("Bang! Camera " + (currentCameraIndex + 1) +
 				  " = " + magazineAmmo + "/" + reserveAmmo);
@@ -257,6 +264,7 @@ public class WeaponController : MonoBehaviour
 				  " → " + magazineAmmo + "/" + reserveAmmo);
 
 		UpdateAmmoUI();
+		TryAutoReload();
 	}
 
 	public void AddReserveAmmoToAll(int amount)
@@ -266,6 +274,8 @@ public class WeaponController : MonoBehaviour
 	// =========================================
 	// Reload
 	// =========================================
+
+	Coroutine reloadRoutine;
 
 	public void StartReload()
     {
@@ -285,7 +295,23 @@ public class WeaponController : MonoBehaviour
 		}
 
 		PlaySound("ReloadSound");
-		StartCoroutine(Reload());
+		reloadRoutine = StartCoroutine(Reload());
+	}
+
+	void TryAutoReload()
+	{
+		if (!canShoot || isReloading)
+			return;
+
+		// Reload เฉพาะตอน Magazine หมด และยังมีกระสุนสำรอง
+		if (magazineAmmo > 0 || reserveAmmo <= 0)
+			return;
+
+		if (GameManager.Instance != null &&
+			!GameManager.Instance.IsPlaying())
+			return;
+
+		StartReload();
 	}
 
 	IEnumerator Reload()
@@ -294,7 +320,38 @@ public class WeaponController : MonoBehaviour
 
 		Debug.Log("กำลัง Reload...");
 
-		yield return new WaitForSeconds(reloadTime);
+		// แสดง UI
+		if (reloadImage != null)
+		{
+			reloadImage.gameObject.SetActive(true);
+			reloadImage.fillAmount = 1f;
+		}
+
+		float timer = 0f;
+
+		while (timer < reloadTime)
+		{
+			// หยุดนับเวลาตอน Pause
+			if (PauseMenu.Instance != null && PauseMenu.Instance.IsPaused)
+			{
+				yield return null;
+				continue;
+			}
+
+			// ถูกยกเลิก (เช่น ปิดอาวุธ / Pause ผ่าน SetPaused)
+			if (!isReloading)
+			{
+				HideReloadUI();
+				yield break;
+			}
+
+			timer += Time.deltaTime;
+
+			if (reloadImage != null)
+				reloadImage.fillAmount = 1f - (timer / reloadTime);
+
+			yield return null;
+		}
 
 		int neededAmmo = maxAmmo - magazineAmmo;
 		int ammoToLoad = Mathf.Min(neededAmmo, reserveAmmo);
@@ -303,6 +360,7 @@ public class WeaponController : MonoBehaviour
 		reserveAmmo -= ammoToLoad;
 
 		isReloading = false;
+		HideReloadUI();
 
 		UpdateAmmoUI();
 		CheckAmmoGameOver();
@@ -310,18 +368,37 @@ public class WeaponController : MonoBehaviour
 		Debug.Log("Reload เสร็จ! " + magazineAmmo + "/" + reserveAmmo);
 	}
 
+	void HideReloadUI()
+	{
+		if (reloadImage != null)
+		{
+			reloadImage.fillAmount = 0f;
+			reloadImage.gameObject.SetActive(false);
+		}
+	}
+
+	void CancelReload()
+	{
+		if (reloadRoutine != null)
+		{
+			StopCoroutine(reloadRoutine);
+			reloadRoutine = null;
+		}
+
+		isReloading = false;
+		HideReloadUI();
+	}
+
 	// =========================================
 	// Camera Index
 	// =========================================
 
 	void UpdateCurrentCameraIndex()
-    {
-		Camera activeCamera = GetActiveCamera();
-
-		if (activeCamera == null)
+	{
+		if (CCTVManager.Instance == null)
 			return;
 
-		int newCameraIndex = GetCameraIndex(activeCamera);
+		int newCameraIndex = CCTVManager.Instance.GetCurrentCameraIndex();
 
 		if (newCameraIndex != currentCameraIndex)
 		{
@@ -329,31 +406,6 @@ public class WeaponController : MonoBehaviour
 			Debug.Log("เปลี่ยนเป็น Camera " + (currentCameraIndex + 1));
 		}
 	}
-
-    int GetCameraIndex(Camera camera)
-    {
-        if (camera == null)
-            return 0;
-
-        string cameraName = camera.name;
-
-        if (cameraName.Contains("1"))
-            return 0;
-
-        if (cameraName.Contains("2"))
-            return 1;
-
-        if (cameraName.Contains("3"))
-            return 2;
-
-        if (cameraName.Contains("4"))
-            return 3;
-
-        if (cameraName.Contains("5"))
-            return 4;
-
-        return 0;
-    }
 
 	// =========================================
 	// Bullet Trail
@@ -376,32 +428,30 @@ public class WeaponController : MonoBehaviour
         bulletTrail.enabled = false;
     }
 
-    // =========================================
-    // Active CCTV Camera
-    // =========================================
+	// =========================================
+	// Active CCTV Camera
+	// =========================================
 
-    Camera GetActiveCamera()
-    {
-        Camera[] allCams =
-            FindObjectsOfType<Camera>();
+	Camera GetActiveCamera()
+	{
+		if (CCTVManager.Instance == null)
+			return null;
 
-        foreach (Camera cam in allCams)
-        {
-            if (cam.isActiveAndEnabled &&
-                cam.name.Contains("CCTV_Cam"))
-            {
-                return cam;
-            }
-        }
+		GameObject obj = CCTVManager.Instance.GetCurrentCameraObject();
 
-        return null;
-    }
+		if (obj == null)
+			return null;
 
-    // =========================================
-    // Ammo Game Over Check
-    // =========================================
+		Camera cam = obj.GetComponent<Camera>();
 
-    void CheckAmmoGameOver()
+		return (cam != null && cam.isActiveAndEnabled) ? cam : null;
+	}
+
+	// =========================================
+	// Ammo Game Over Check
+	// =========================================
+
+	void CheckAmmoGameOver()
     {
 		if (!ammoEmptyCausesGameOver)
 			return;
