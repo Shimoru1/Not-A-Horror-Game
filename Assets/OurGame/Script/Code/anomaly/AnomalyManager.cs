@@ -5,6 +5,14 @@ using static AnomalyTarget;
 
 public class AnomalyManager : MonoBehaviour
 {
+	private readonly Dictionary<AnomalyTarget, GameObject> prefabOf =
+		new Dictionary<AnomalyTarget, GameObject>();
+
+	[Header("HP ของแต่ละประเภท")]
+	public int combatHealth = 20;
+	public int disturbHealth = 20;
+	public int protectHealth = 50;
+
 	// ==================================================
 	// COMBAT (Object ในฉากที่สลับสภาพ)
 	// ==================================================
@@ -73,17 +81,18 @@ public class AnomalyManager : MonoBehaviour
 		if (counterSystem == null)
 			counterSystem = FindFirstObjectByType<AnomalyCounter>();
 
+
 		if (combatTargets != null)
 		{
 			foreach (AnomalyTarget t in combatTargets)
 			{
 				if (t == null) continue;
 
-				if (t.type != AnomalyType.Combat)
+				if (t.type != AnomalyType.Combat && t.type != AnomalyType.Interact)
 				{
 					Debug.LogWarning(
 						"[AnomalyManager] " + t.name +
-						" อยู่ใน combatTargets แต่ type ไม่ใช่ Combat"
+						" อยู่ใน combatTargets แต่ type ต้องเป็น Combat หรือ Interact"
 					);
 				}
 
@@ -92,6 +101,17 @@ public class AnomalyManager : MonoBehaviour
 		}
 
 		spawnCoroutine = StartCoroutine(SpawnLoop());
+	}
+
+	public int GetMaxHealth(AnomalyType type)
+	{
+		switch (type)
+		{
+			case AnomalyType.Combat: return combatHealth;
+			case AnomalyType.Disturb: return disturbHealth;
+			case AnomalyType.Protect: return protectHealth;
+			default: return 1; // Interact ไม่ใช้ HP
+		}
 	}
 
 
@@ -171,12 +191,24 @@ public class AnomalyManager : MonoBehaviour
 			}
 		}
 
+		List<GameObject> freePrefabs = new List<GameObject>();
+
+		if (anomalyPrefabs != null)
+		{
+			foreach (GameObject pf in anomalyPrefabs)
+			{
+				if (pf != null &&
+					!freePrefabs.Contains(pf) &&
+					!prefabOf.ContainsValue(pf))
+				{
+					freePrefabs.Add(pf);
+				}
+			}
+		}
+
 		bool canCombat = freeCombat.Count > 0;
 
-		bool canPrefab =
-			freePoints.Count > 0 &&
-			anomalyPrefabs != null &&
-			anomalyPrefabs.Length > 0;
+		bool canPrefab = freePoints.Count > 0 && freePrefabs.Count > 0;
 
 		if (!canCombat && !canPrefab)
 			return; // ไม่มีที่ว่างแล้ว
@@ -197,8 +229,7 @@ public class AnomalyManager : MonoBehaviour
 		else
 		{
 			Transform point = freePoints[Random.Range(0, freePoints.Count)];
-			GameObject prefab =
-				anomalyPrefabs[Random.Range(0, anomalyPrefabs.Length)];
+			GameObject prefab = freePrefabs[Random.Range(0, freePrefabs.Count)];
 
 			if (prefab == null)
 				return;
@@ -211,17 +242,18 @@ public class AnomalyManager : MonoBehaviour
 			if (target == null)
 				target = go.GetComponentInChildren<AnomalyTarget>();
 
-			if (target == null || target.type == AnomalyType.Combat)
+			if (target == null || target.type == AnomalyType.Combat || target.type == AnomalyType.Interact)
 			{
 				Debug.LogWarning(
 					"[AnomalyManager] Prefab " + prefab.name +
-					" ต้องมี AnomalyTarget และ type ต้องไม่ใช่ Combat"
+					" ต้องมี AnomalyTarget และ type เป็น Disturb หรือ Protect"
 				);
 
 				Destroy(go);
 				return;
 			}
 
+			prefabOf[target] = prefab;
 			occupiedPoints.Add(point);
 			target.Activate(this, point);
 
@@ -242,10 +274,9 @@ public class AnomalyManager : MonoBehaviour
 	// RESOLVED (เรียกจาก AnomalyTarget)
 	// ==================================================
 
-	public void OnAnomalyResolved(
-		AnomalyTarget target,
-		AnomalyResolveReason reason)
+	public void OnAnomalyResolved(AnomalyTarget target,AnomalyResolveReason reason)
 	{
+		prefabOf.Remove(target);
 		activeAnomalies.Remove(target);
 
 		if (target.SpawnPoint != null)

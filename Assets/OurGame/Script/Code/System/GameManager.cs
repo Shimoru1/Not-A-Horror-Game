@@ -198,7 +198,7 @@ public class GameManager : MonoBehaviour
 		if (startText != null)
 		{
 			startText.gameObject.SetActive(true);
-			startText.text = "Wait.. what was that..";
+			startText.text = "Wait.. something wrong..";
 		}
 
 		if (AudioManager.Instance != null)

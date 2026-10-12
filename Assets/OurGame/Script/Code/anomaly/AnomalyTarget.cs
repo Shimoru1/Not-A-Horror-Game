@@ -21,8 +21,6 @@ public class AnomalyTarget : MonoBehaviour
 	[Header("Type")]
 	public AnomalyType type = AnomalyType.Combat;
 
-	[Header("Health (Combat / Disturb / Protect)")]
-	public int maxHealth = 20;
 
 	[Header("Lifetime (Disturb / Protect)")]
 	[Tooltip("หายเองหลังกี่วินาที")]
@@ -34,6 +32,9 @@ public class AnomalyTarget : MonoBehaviour
 	public float interactDistance = 2.5f;
 	[Tooltip("(ไม่บังคับ) Image แบบ Filled แสดงความคืบหน้า")]
 	[SerializeField] private Image progressFill;
+
+	[Tooltip("Text 'E' ที่แสดงตอนอยู่ในระยะ (เช่น World Space Canvas เป็นลูกของ Object นี้ ปิดไว้ก่อน)")]
+	public GameObject promptUI;
 
 	[Header("Combat Swap")]
 	[Tooltip("สภาพปกติ (เช่น รูปภาพปกติ)")]
@@ -47,6 +48,7 @@ public class AnomalyTarget : MonoBehaviour
 
 	private bool isActive = false;
 	private int health;
+	private int maxHp = 1;
 	private float lifeTimer;
 	private float holdProgress;
 
@@ -62,6 +64,7 @@ public class AnomalyTarget : MonoBehaviour
 	{
 		isActive = false;
 		SetCombatVisual(false);
+		SetPrompt(false);
 	}
 
 	public void Activate(AnomalyManager owner, Transform point)
@@ -70,7 +73,8 @@ public class AnomalyTarget : MonoBehaviour
 		spawnPoint = point;
 
 		isActive = true;
-		health = maxHealth;
+		maxHp = owner != null ? owner.GetMaxHealth(type) : 1;
+		health = maxHp;
 		lifeTimer = lifetime;
 		holdProgress = 0f;
 
@@ -116,10 +120,11 @@ public class AnomalyTarget : MonoBehaviour
 
 	private void HandleInteract()
 	{
-		// กดแก้ได้เฉพาะตอนไม่ได้ดูกล้อง
+		// ดูกล้องอยู่: ซ่อน Text และกดไม่ได้
 		if (CCTVManager.Instance != null &&
 			CCTVManager.Instance.isWatchingCCTV)
 		{
+			SetPrompt(false);
 			ResetHold();
 			return;
 		}
@@ -132,8 +137,11 @@ public class AnomalyTarget : MonoBehaviour
 		}
 
 		float dist = Vector3.Distance(player.position, transform.position);
+		bool inRange = dist <= interactDistance;
 
-		if (dist <= interactDistance && Input.GetKey(KeyCode.E))
+		SetPrompt(inRange);
+
+		if (inRange && Input.GetKey(KeyCode.E))
 		{
 			holdProgress += Time.deltaTime;
 			UpdateProgressUI();
@@ -168,6 +176,8 @@ public class AnomalyTarget : MonoBehaviour
 
 	public void TakeDamage(int damage)
 	{
+		Debug.Log($"[AnomalyTarget] {name} | type={type} | active={isActive} | hp={health}/{maxHp} | dmg={damage}");
+
 		if (!isActive)
 			return;
 
@@ -218,8 +228,15 @@ public class AnomalyTarget : MonoBehaviour
 
 		if (type == AnomalyType.Combat)
 			SetCombatVisual(false); // กลับเป็นปกติ
+		SetPrompt(false);
 
 		if (manager != null)
 			manager.OnAnomalyResolved(this, reason);
+	}
+
+	private void SetPrompt(bool show)
+	{
+		if (promptUI != null && promptUI.activeSelf != show)
+			promptUI.SetActive(show);
 	}
 }
