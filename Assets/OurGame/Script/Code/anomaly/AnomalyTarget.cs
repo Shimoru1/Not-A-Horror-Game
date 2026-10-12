@@ -54,6 +54,8 @@ public class AnomalyTarget : MonoBehaviour
 
 	public bool IsActive => isActive;
 	public Transform SpawnPoint => spawnPoint;
+	private bool UsesSwap =>
+	type == AnomalyType.Combat || type == AnomalyType.Interact;
 
 	// ==================================================
 	// INIT / ACTIVATE
@@ -69,6 +71,8 @@ public class AnomalyTarget : MonoBehaviour
 
 	public void Activate(AnomalyManager owner, Transform point)
 	{
+		if (UsesSwap)
+			SetCombatVisual(true);
 		manager = owner;
 		spawnPoint = point;
 
@@ -225,6 +229,10 @@ public class AnomalyTarget : MonoBehaviour
 			return;
 
 		isActive = false;
+
+		if (UsesSwap)
+			SetCombatVisual(false);
+		SetPrompt(false);
 
 		if (type == AnomalyType.Combat)
 			SetCombatVisual(false); // กลับเป็นปกติ

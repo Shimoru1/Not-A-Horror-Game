@@ -292,7 +292,7 @@ public class AnomalyManager : MonoBehaviour
 		}
 
 		// Combat เป็น Object ในฉาก แค่สลับกลับเป็นปกติ ไม่ลบ
-		if (target.type != AnomalyType.Combat)
+		if (target.type != AnomalyType.Combat &&target.type != AnomalyType.Interact)
 			Destroy(target.gameObject);
 
 		Debug.Log(
