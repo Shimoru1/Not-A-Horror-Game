@@ -36,7 +36,8 @@ public class GameManager : MonoBehaviour
 	{
 		None,
 		TooManyAnomalies,
-		OutOfAmmo
+		OutOfAmmo,
+		ShotProtectAnomaly
 	}
 
 	[Header("GAME STATE")]
@@ -45,7 +46,7 @@ public class GameManager : MonoBehaviour
 
 	[Header("GAME OVER REASON")]
 	[SerializeField]
-	private GameOverReason gameOverReason = GameOverReason.None;
+	public GameOverReason gameOverReason = GameOverReason.None;
 
 	[Header("GAME START")]
 	[Tooltip("เวลารอก่อนเริ่มเกม")]

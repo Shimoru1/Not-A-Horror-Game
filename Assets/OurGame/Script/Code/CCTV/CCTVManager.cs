@@ -717,6 +717,7 @@ public class CCTVManager : MonoBehaviour
 			return;
 
 		dirtTimer = 0f;
+		MakeRandomCameraDirty();
 
 		if (cleaningTargets == null || cleaningTargets.Length == 0)
 			return;
@@ -745,6 +746,30 @@ public class CCTVManager : MonoBehaviour
 			dirtOverlay.SetCamera(GetCurrentTarget());
 
 		Debug.Log("CAMERA DIRTY: " + picked.name);
+	}
+
+	public bool MakeRandomCameraDirty()
+	{
+		if (cleaningTargets == null || cleaningTargets.Length == 0)
+			return false;
+
+		List<CCTVCleaningTarget> cleanCams = new List<CCTVCleaningTarget>();
+
+		foreach (CCTVCleaningTarget t in cleaningTargets)
+			if (t != null && !t.IsDirty())
+				cleanCams.Add(t);
+
+		if (cleanCams.Count == 0)
+			return false;
+
+		CCTVCleaningTarget picked = cleanCams[Random.Range(0, cleanCams.Count)];
+		picked.MakeDirty();
+
+		if (isWatchingCCTV && dirtOverlay != null)
+			dirtOverlay.SetCamera(GetCurrentTarget());
+
+		Debug.Log("CAMERA DIRTY: " + picked.name);
+		return true;
 	}
 
 	// กด F รัวๆ เพื่อเช็ดกล้องที่กำลังดูอยู่

@@ -2,157 +2,118 @@
 
 public class AnomalyCounter : MonoBehaviour
 {
-    [Header("Anomaly Settings")]
+	[Header("Anomaly Settings")]
 
-    [Tooltip("จำนวน Anomaly สูงสุดที่อยู่ในฉากพร้อมกัน")]
-    public int maxAnomaly = 6;
+	[Tooltip("ถึงจำนวนนี้แพ้ทันที")]
+	public int maxAnomaly = 10;
 
-    [Tooltip("จำนวน Anomaly ที่อยู่ในฉากตอนนี้")]
-    [SerializeField]
-    private int currentAnomaly = 0;
+	[Tooltip("ถึงจำนวนนี้เริ่มเตือน")]
+	public int warningThreshold = 8;
 
-
-    [Header("Elimination Statistics")]
-
-    [Tooltip("จำนวน Anomaly ที่กำจัดได้ทั้งหมดในคืนนี้")]
-    [SerializeField]
-    private int totalAnomaliesDefeated = 0;
+	[Tooltip("จำนวน Anomaly ที่อยู่ในฉากตอนนี้")]
+	[SerializeField]
+	private int currentAnomaly = 0;
 
 
-    [Header("Game Time")]
+	[Header("Elimination Statistics")]
 
-    public GameTime gameTime;
-
-
-    private bool gameOver = false;
+	[SerializeField]
+	private int totalAnomaliesDefeated = 0;
 
 
-    // ==================================================
-    // ANOMALY SPAWNED
-    // ==================================================
+	[Header("Game Time")]
+	public GameTime gameTime;
 
-    public void AnomalySpawned()
-    {
-        if (gameOver)
-            return;
+	private bool gameOver = false;
 
 
-        currentAnomaly++;
+	// ==================================================
+	// SPAWNED
+	// ==================================================
 
-
-        Debug.Log(
-            "ANOMALY SPAWNED → Current: " +
-            currentAnomaly +
-            "/" +
-            maxAnomaly
-        );
-
-
-        // 6/6 ยังเล่นต่อได้
-        // ถ้าเกิน 6 ถึงจะ Game Over
-        if (currentAnomaly > maxAnomaly)
-        {
-            LoseGame();
-        }
-    }
-
-
-    // ==================================================
-    // ANOMALY REMOVED
-    // ==================================================
-
-    public void AnomalyRemoved()
-    {
-		if (GameManager.Instance != null &&
-		   !GameManager.Instance.IsPlaying())
+	public void AnomalySpawned()
+	{
+		if (gameOver)
 			return;
 
-		// ลดจำนวนที่อยู่ในฉาก
-		currentAnomaly--;
+		currentAnomaly++;
+
+		Debug.Log(
+			"ANOMALY SPAWNED → Current: " +
+			currentAnomaly + "/" + maxAnomaly
+		);
+
+		if (currentAnomaly >= maxAnomaly)
+			LoseGame();
+	}
 
 
-        if (currentAnomaly < 0)
-            currentAnomaly = 0;
+	// ==================================================
+	// REMOVED (กลับเป็นปกติ / กำจัด / หายเอง)
+	// defeated = true  → นับเป็นที่กำจัดได้
+	// defeated = false → หายเอง ไม่นับสถิติ
+	// ==================================================
+
+	public void AnomalyRemoved(bool defeated = true)
+	{
+		if (GameManager.Instance != null &&
+			!GameManager.Instance.IsPlaying())
+			return;
+
+		currentAnomaly = Mathf.Max(0, currentAnomaly - 1);
+
+		if (defeated)
+			totalAnomaliesDefeated++;
+
+		Debug.Log(
+			"ANOMALY REMOVED → Current: " +
+			currentAnomaly + "/" + maxAnomaly +
+			" | Defeated: " + totalAnomaliesDefeated
+		);
+	}
 
 
-        // ==============================================
-        // เพิ่มจำนวนที่กำจัดได้ทั้งหมด
-        // ==============================================
+	// ==================================================
+	// GAME OVER
+	// ==================================================
 
-        totalAnomaliesDefeated++;
+	private void LoseGame()
+	{
+		if (gameOver)
+			return;
 
+		gameOver = true;
 
-        Debug.Log(
-            "ANOMALY ELIMINATED!"
-        );
+		if (gameTime != null)
+			gameTime.StopTime();
 
+		Debug.Log("GAME OVER! Too many anomalies!");
 
-        Debug.Log(
-            "Current Anomaly: " +
-            currentAnomaly +
-            "/" +
-            maxAnomaly
-        );
-
-
-        Debug.Log(
-            "Total Eliminated Tonight: " +
-            totalAnomaliesDefeated
-        );
-    }
+		if (GameManager.Instance != null)
+		{
+			GameManager.Instance.GameOver(
+				GameManager.GameOverReason.TooManyAnomalies
+			);
+		}
+	}
 
 
-    // ==================================================
-    // GAME OVER
-    // ==================================================
+	// ==================================================
+	// GETTERS
+	// ==================================================
 
-    private void LoseGame()
-    {
-        if (gameOver)
-            return;
+	public bool IsWarning()
+	{
+		return !gameOver && currentAnomaly >= warningThreshold;
+	}
 
+	public int GetCurrentAnomaly()
+	{
+		return currentAnomaly;
+	}
 
-        gameOver = true;
-
-
-        // หยุดเวลา
-        if (gameTime != null)
-        {
-            gameTime.StopTime();
-        }
-
-
-        Debug.Log(
-            "GAME OVER! Too many anomalies!"
-        );
-
-
-        // ส่งไป GameManager
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.GameOver(
-                GameManager.GameOverReason.TooManyAnomalies
-            );
-        }
-    }
-
-
-    // ==================================================
-    // GET CURRENT ANOMALY
-    // ==================================================
-
-    public int GetCurrentAnomaly()
-    {
-        return currentAnomaly;
-    }
-
-
-    // ==================================================
-    // GET TOTAL ELIMINATED
-    // ==================================================
-
-    public int GetTotalAnomaliesDefeated()
-    {
-        return totalAnomaliesDefeated;
-    }
+	public int GetTotalAnomaliesDefeated()
+	{
+		return totalAnomaliesDefeated;
+	}
 }

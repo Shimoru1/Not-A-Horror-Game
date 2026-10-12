@@ -1,390 +1,225 @@
-﻿using UnityEngine;
-using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
+
+public enum AnomalyType
+{
+	Combat,    // ยิงจนกลับเป็นปกติ (สลับสภาพ Object ในฉาก)
+	Interact,  // เดินเข้าไปกด E ค้าง
+	Disturb,   // ยิงตาย = โดนหักกระสุน/กล้องเปื้อน, หายเองตามเวลา
+	Protect    // ยิงตาย = แพ้ทันที, หายเองตามเวลา
+}
+
+public enum AnomalyResolveReason
+{
+	Killed,
+	Cured,
+	Expired
+}
 
 public class AnomalyTarget : MonoBehaviour
 {
-    private int killerCameraIndex = -1;
-    // ==================================================
-    // ANOMALY TYPE
-    // ==================================================
+	[Header("Type")]
+	public AnomalyType type = AnomalyType.Combat;
 
-    public enum AnomalyType
-    {
-        Threat,
-        Disturbance,
-        Harmless
+	[Header("Health (Combat / Disturb / Protect)")]
+	public int maxHealth = 20;
 
-    }
+	[Header("Lifetime (Disturb / Protect)")]
+	[Tooltip("หายเองหลังกี่วินาที")]
+	public float lifetime = 20f;
 
+	[Header("Interact")]
+	[Tooltip("ต้องกด E ค้างกี่วินาที")]
+	public float holdTime = 3f;
+	public float interactDistance = 2.5f;
+	[Tooltip("(ไม่บังคับ) Image แบบ Filled แสดงความคืบหน้า")]
+	[SerializeField] private Image progressFill;
 
-    [Header("Anomaly Type")]
+	[Header("Combat Swap")]
+	[Tooltip("สภาพปกติ (เช่น รูปภาพปกติ)")]
+	public GameObject normalState;
+	[Tooltip("สภาพ Anomaly (เช่น รูปภาพที่เปลี่ยนไป) - ต้องมี Collider")]
+	public GameObject anomalyState;
 
-    [Tooltip("กำหนดประเภทของ Anomaly")]
-    public AnomalyType anomalyType = AnomalyType.Threat;
+	private AnomalyManager manager;
+	private Transform spawnPoint;
+	private Transform player;
 
-    [Tooltip("Anomaly ตัวนี้สามารถถูกยิงได้หรือไม่")]
-    public bool canBeShot = true;
+	private bool isActive = false;
+	private int health;
+	private float lifeTimer;
+	private float holdProgress;
 
-    [Tooltip("Anomaly ตัวนี้ต้องใช้ Interaction จัดการหรือไม่")]
-    public bool requiresInteraction = false;
+	public bool IsActive => isActive;
+	public Transform SpawnPoint => spawnPoint;
 
-    [Tooltip("Anomaly ตัวนี้ไม่มีอันตราย")]
-    public bool isHarmless = false;
+	// ==================================================
+	// INIT / ACTIVATE
+	// ==================================================
 
+	// เรียกโดย Manager สำหรับ Combat ที่วางไว้ในฉาก
+	public void InitCombat()
+	{
+		isActive = false;
+		SetCombatVisual(false);
+	}
 
-    // ==================================================
-    // HEALTH
-    // ==================================================
+	public void Activate(AnomalyManager owner, Transform point)
+	{
+		manager = owner;
+		spawnPoint = point;
 
-    [Header("Health")]
+		isActive = true;
+		health = maxHealth;
+		lifeTimer = lifetime;
+		holdProgress = 0f;
 
-    public int health = 10;
+		if (type == AnomalyType.Combat)
+			SetCombatVisual(true);
 
+		UpdateProgressUI();
+	}
 
-    // ==================================================
-    // AMMO DROP
-    // ==================================================
+	private void SetCombatVisual(bool anomaly)
+	{
+		if (normalState != null) normalState.SetActive(!anomaly);
+		if (anomalyState != null) anomalyState.SetActive(anomaly);
+	}
 
-    [Header("Ammo Drop")]
+	// ==================================================
+	// UPDATE
+	// ==================================================
 
-    [Range(0f, 1f)]
-    public float ammoDropChance = 0.4f;
+	private void Update()
+	{
+		if (!isActive)
+			return;
 
-    public GameObject ammoPickupPrefab;
-
-    [Min(1)]
-    public int minAmmoDrop = 5;
-
-    [Min(1)]
-    public int maxAmmoDrop = 10;
-
-
-    // ==================================================
-    // COUNTER
-    // ==================================================
-
-    [Header("Counter")]
-
-    [Tooltip("ไม่จำเป็นต้องลาก ถ้าว่างระบบจะหาให้อัตโนมัติ")]
-    public AnomalyCounter counterSystem;
-
-
-    // ==================================================
-    // INTERNAL
-    // ==================================================
-
-    private bool isDead = false;
-
-
-    // ==================================================
-    // AWAKE
-    // ==================================================
-
-    private void Awake()
-    {
-        // ==============================================
-        // หา Counter อัตโนมัติ
-        // ==============================================
-
-        if (counterSystem == null)
-        {
-            counterSystem =
-                FindFirstObjectByType<AnomalyCounter>();
-        }
-
-
-        if (counterSystem == null)
-        {
-            Debug.LogError(
-                gameObject.name +
-                " → หา AnomalyCounter ไม่เจอ!"
-            );
-        }
-        else
-        {
-            Debug.Log(
-                gameObject.name +
-                " → เชื่อมกับ AnomalyCounter แล้ว"
-            );
-        }
-
-
-        // ==============================================
-        // ตั้งค่าตาม Anomaly Type
-        // ==============================================
-
-        ApplyAnomalyTypeSettings();
-    }
-
-
-    // ==================================================
-    // APPLY TYPE SETTINGS
-    // ==================================================
-
-    private void ApplyAnomalyTypeSettings()
-    {
-        switch (anomalyType)
-        {
-            case AnomalyType.Threat:
-
-                // Threat = สามารถยิงได้
-                canBeShot = true;
-                requiresInteraction = false;
-                isHarmless = false;
-
-                break;
-
-
-            case AnomalyType.Disturbance:
-
-                // Disturbance = ยิงได้
-                // ตัวสีเหลือง/สีส้มจะใช้ระบบนี้
-                canBeShot = true;
-                requiresInteraction = false;
-                isHarmless = false;
-
-                break;
-
-
-            case AnomalyType.Harmless:
-
-                // Harmless = ไม่ต้องยิง
-                canBeShot = false;
-                requiresInteraction = false;
-                isHarmless = true;
-
-                break;
-        }
-    }
-
-
-    // ==================================================
-    // TAKE DAMAGE
-    // ==================================================
-
-    // แบบเดิม เอาไว้รองรับระบบอื่นที่เรียก TakeDamage(amount)
-    public void TakeDamage(int amount)
-    {
 		if (GameManager.Instance != null &&
 			!GameManager.Instance.IsPlaying())
 			return;
 
-		if (!canBeShot)
+		if (type == AnomalyType.Disturb || type == AnomalyType.Protect)
+		{
+			lifeTimer -= Time.deltaTime;
+
+			if (lifeTimer <= 0f)
+			{
+				Resolve(AnomalyResolveReason.Expired);
+				return;
+			}
+		}
+
+		if (type == AnomalyType.Interact)
+			HandleInteract();
+	}
+
+	private void HandleInteract()
+	{
+		// กดแก้ได้เฉพาะตอนไม่ได้ดูกล้อง
+		if (CCTVManager.Instance != null &&
+			CCTVManager.Instance.isWatchingCCTV)
+		{
+			ResetHold();
+			return;
+		}
+
+		if (player == null)
+		{
+			GameObject p = GameObject.FindGameObjectWithTag("Player");
+			if (p == null) return;
+			player = p.transform;
+		}
+
+		float dist = Vector3.Distance(player.position, transform.position);
+
+		if (dist <= interactDistance && Input.GetKey(KeyCode.E))
+		{
+			holdProgress += Time.deltaTime;
+			UpdateProgressUI();
+
+			if (holdProgress >= holdTime)
+				Resolve(AnomalyResolveReason.Cured);
+		}
+		else
+		{
+			ResetHold();
+		}
+	}
+
+	private void ResetHold()
+	{
+		if (holdProgress == 0f) return;
+		holdProgress = 0f;
+		UpdateProgressUI();
+	}
+
+	private void UpdateProgressUI()
+	{
+		if (progressFill == null) return;
+
+		progressFill.gameObject.SetActive(holdProgress > 0f);
+		progressFill.fillAmount = holdTime > 0f ? holdProgress / holdTime : 0f;
+	}
+
+	// ==================================================
+	// DAMAGE (เรียกจาก WeaponController)
+	// ==================================================
+
+	public void TakeDamage(int damage)
+	{
+		if (!isActive)
 			return;
 
-		TakeDamage(amount, -1);
-    }
+		// Interact ยิงไม่เข้า
+		if (type == AnomalyType.Interact)
+			return;
 
-    // แบบใหม่ รับเลขกล้องที่ยิงเข้ามาด้วย
-    public void TakeDamage(int amount, int cameraIndex)
-    {
-        if (!canBeShot)
-            return;
+		health -= damage;
 
-        // จำว่ากระสุนล่าสุดมาจากกล้องไหน
-        if (cameraIndex >= 0)
-        {
-            killerCameraIndex = cameraIndex;
-        }
+		if (health > 0)
+			return;
 
-        health -= amount;
+		switch (type)
+		{
+			case AnomalyType.Combat:
+				Resolve(AnomalyResolveReason.Killed);
+				break;
 
-        Debug.Log(
-            $"💥 {gameObject.name} โดนยิง! " +
-            $"Damage: {amount} | HP เหลือ: {health} | " +
-            $"Camera: {(cameraIndex >= 0 ? cameraIndex + 1 : 0)}"
-        );
+			case AnomalyType.Disturb:
+				if (manager != null)
+					manager.ApplyDisturbPenalty();
+				Resolve(AnomalyResolveReason.Killed);
+				break;
 
-        if (health <= 0 && !isDead)
-        {
-            isDead = true;
-            StartCoroutine(DieWithDelay());
-        }
-    }
+			case AnomalyType.Protect:
+				Resolve(AnomalyResolveReason.Killed);
 
+				if (GameManager.Instance != null)
+				{
+					GameManager.Instance.GameOver(
+						GameManager.GameOverReason.ShotProtectAnomaly
+					);
+				}
+				break;
+		}
+	}
 
-    // ==================================================
-    // DIE
-    // ==================================================
+	// ==================================================
+	// RESOLVE
+	// ==================================================
 
-    private IEnumerator DieWithDelay()
-    {
-        Debug.Log(
-            gameObject.name +
-            " ถูกกำจัดแล้ว!"
-        );
+	private void Resolve(AnomalyResolveReason reason)
+	{
+		if (!isActive)
+			return;
 
+		isActive = false;
 
-        // รอ 1 วินาที
-        yield return new WaitForSeconds(1f);
+		if (type == AnomalyType.Combat)
+			SetCombatVisual(false); // กลับเป็นปกติ
 
-
-        // ==================================================
-        // ORANGE DISTURBANCE PENALTY
-        // ==================================================
-
-        if (anomalyType == AnomalyType.Disturbance && killerCameraIndex >= 0)
-        {
-            OrangeDisturbance orange =
-                GetComponent<OrangeDisturbance>();
-
-            if (orange == null)
-            {
-                orange = GetComponentInParent<OrangeDisturbance>();
-            }
-
-            if (orange != null)
-            {
-                orange.OnKilledByCamera(killerCameraIndex);
-            }
-            else
-            {
-                Debug.LogWarning(
-                    gameObject.name +
-                    " → หา OrangeDisturbance ไม่เจอ!"
-                );
-            }
-        }
-
-
-        // ==================================================
-        // AMMO DROP
-        // ==================================================
-
-        // 🟠 Orange Disturbance เป็นตัวลงโทษ
-        // ดังนั้น "ห้าม" ดรอปกระสุน
-        if (anomalyType == AnomalyType.Disturbance)
-        {
-            Debug.Log(
-                gameObject.name +
-                " → 🟠 Disturbance: ไม่ดรอปกระสุน เพราะเป็นตัวลงโทษ"
-            );
-        }
-        else
-        {
-            // Anomaly ประเภทอื่นยังใช้ระบบดรอปกระสุนเดิม
-            float roll = Random.value;
-
-            Debug.Log(
-                gameObject.name +
-                " Ammo Drop Roll = " +
-                roll.ToString("F2") +
-                " / Chance = " +
-                ammoDropChance.ToString("F2")
-            );
-
-
-            if (roll < ammoDropChance)
-            {
-                SpawnAmmoPickup();
-            }
-            else
-            {
-                Debug.Log(
-                    gameObject.name +
-                    " ไม่ดรอปกระสุน"
-                );
-            }
-        }
-
-
-        // ==================================================
-        // ANOMALY COUNTER
-        // ==================================================
-
-        if (counterSystem == null)
-        {
-            // เผื่อกรณี Counter ถูกสร้าง/เปลี่ยน
-            // หลังจาก Awake
-
-            counterSystem =
-                FindFirstObjectByType<AnomalyCounter>();
-        }
-
-
-        if (counterSystem != null)
-        {
-            // ลดจำนวน Anomaly ที่อยู่ในฉาก
-            counterSystem.AnomalyRemoved();
-
-
-            // แสดงจำนวนที่กำจัดไปทั้งหมด
-            Debug.Log(
-                "Total Anomalies Eliminated Tonight: " +
-                counterSystem.GetTotalAnomaliesDefeated()
-            );
-        }
-        else
-        {
-            Debug.LogError(
-                gameObject.name +
-                " → ไม่สามารถลด Anomaly Counter ได้!"
-            );
-        }
-
-
-        // ==================================================
-        // DESTROY
-        // ==================================================
-
-        Destroy(gameObject);
-    }
-
-
-    // ==================================================
-    // SPAWN AMMO PICKUP
-    // ==================================================
-
-    private void SpawnAmmoPickup()
-    {
-        if (ammoPickupPrefab == null)
-        {
-            Debug.LogWarning(
-                gameObject.name +
-                " ไม่มี Ammo Pickup Prefab!"
-            );
-
-            return;
-        }
-
-
-        Vector3 spawnPosition =
-            transform.position +
-            Vector3.up * 0.5f;
-
-
-        GameObject pickup =
-            Instantiate(
-                ammoPickupPrefab,
-                spawnPosition,
-                Quaternion.identity
-            );
-
-
-        AmmoPickup ammo =
-            pickup.GetComponent<AmmoPickup>();
-
-
-        if (ammo != null)
-        {
-            ammo.ammoAmount =
-                Random.Range(
-                    minAmmoDrop,
-                    maxAmmoDrop + 1
-                );
-
-
-            Debug.Log(
-                "Ammo Pickup เกิด! +" +
-                ammo.ammoAmount +
-                " นัด"
-            );
-        }
-        else
-        {
-            Debug.LogWarning(
-                "AmmoPickup Prefab ไม่มี AmmoPickup Script!"
-            );
-        }
-    }
+		if (manager != null)
+			manager.OnAnomalyResolved(this, reason);
+	}
 }

@@ -1,86 +1,98 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static AnomalyTarget;
 
 public class AnomalyManager : MonoBehaviour
 {
-    // ==================================================
-    // ANOMALY SETUP
-    // ==================================================
+	// ==================================================
+	// COMBAT (Object ในฉากที่สลับสภาพ)
+	// ==================================================
 
-    [Header("Anomaly Setup")]
+	[Header("Combat Anomaly (Object ในฉาก)")]
+	[Tooltip("ลาก Object ที่มี AnomalyTarget (type = Combat) มาใส่ เช่น รูปภาพต่างๆ")]
+	public AnomalyTarget[] combatTargets;
 
-    [Tooltip("ลาก Prefab ของ Anomaly มาใส่ตรงนี้")]
-    public GameObject[] anomalyPrefabs;
-
-    [Tooltip("ลากจุดเกิด Empty Object มาใส่ตรงนี้")]
-    public Transform[] spawnPoints;
-
-
-    // ==================================================
-    // RANDOM SPAWN TIMING
-    // ==================================================
-
-    [Header("Random Spawn Timing")]
-
-    [Tooltip("เวลาที่รอก่อนเริ่ม Spawn ตัวแรก")]
-    public float delayBeforeFirstSpawn = 5f;
-
-    [Tooltip("เวลาต่ำสุดก่อน Spawn ตัวถัดไป")]
-    public float minSpawnInterval = 5f;
-
-    [Tooltip("เวลาสูงสุดก่อน Spawn ตัวถัดไป")]
-    public float maxSpawnInterval = 10f;
+	[Tooltip("โอกาสที่จะสุ่มได้ Combat (0-1) เมื่อมีทั้ง Combat และ Prefab ว่างอยู่")]
+	[Range(0f, 1f)] public float combatChance = 0.5f;
 
 
-    // ==================================================
-    // SPAWN LIMIT
-    // ==================================================
+	// ==================================================
+	// PREFAB ANOMALY (Interact / Disturb / Protect)
+	// ==================================================
 
-    [Header("Spawn Limit")]
+	[Header("Prefab Anomaly (Interact / Disturb / Protect)")]
+	public GameObject[] anomalyPrefabs;
 
-    [Tooltip("จำนวน Anomaly สูงสุดที่อนุญาตให้มีในฉากพร้อมกัน")]
-    public int maxActiveAnomalies = 6;
-
-
-    // ==================================================
-    // ANOMALY COUNTER
-    // ==================================================
-
-    [Header("Anomaly Counter")]
-
-    [Tooltip("ลาก AnomalyCounter จาก Hierarchy มาใส่ตรงนี้")]
-    public AnomalyCounter counterSystem;
+	[Tooltip("จุดเกิด - 1 จุดมี Anomaly ได้ทีละ 1 ตัว")]
+	public Transform[] spawnPoints;
 
 
-    // ==================================================
-    // INTERNAL DATA
-    // ==================================================
+	// ==================================================
+	// TIMING
+	// ==================================================
 
-    private List<GameObject> activeAnomalies =
-        new List<GameObject>();
+	[Header("Random Spawn Timing")]
+	public float delayBeforeFirstSpawn = 5f;
+	public float minSpawnInterval = 5f;
+	public float maxSpawnInterval = 10f;
 
-    private Coroutine spawnCoroutine;
+
+	// ==================================================
+	// DISTURB PENALTY
+	// ==================================================
+
+	[Header("Disturb Penalty")]
+	[Tooltip("จำนวนกระสุนที่โดนหัก (ถ้าสุ่มได้แบบหักกระสุน)")]
+	public int disturbAmmoPenalty = 5;
 
 
-    // ==================================================
-    // START
-    // ==================================================
+	// ==================================================
+	// COUNTER
+	// ==================================================
 
-    private void Start()
-    {
-        // ถ้ายังไม่ได้ลาก Counter มา
-        // ให้หาให้อัตโนมัติ
-        if (counterSystem == null)
-        {
-            counterSystem =
-                FindFirstObjectByType<AnomalyCounter>();
-        }
+	[Header("Anomaly Counter")]
+	public AnomalyCounter counterSystem;
 
-        // เริ่มระบบ Spawn
-        spawnCoroutine =
-            StartCoroutine(SpawnLoop());
-    }
+
+	// ==================================================
+	// INTERNAL
+	// ==================================================
+
+	private readonly List<AnomalyTarget> activeAnomalies =
+		new List<AnomalyTarget>();
+
+	private readonly HashSet<Transform> occupiedPoints =
+		new HashSet<Transform>();
+
+	private Coroutine spawnCoroutine;
+
+
+	private void Start()
+	{
+		if (counterSystem == null)
+			counterSystem = FindFirstObjectByType<AnomalyCounter>();
+
+		if (combatTargets != null)
+		{
+			foreach (AnomalyTarget t in combatTargets)
+			{
+				if (t == null) continue;
+
+				if (t.type != AnomalyType.Combat)
+				{
+					Debug.LogWarning(
+						"[AnomalyManager] " + t.name +
+						" อยู่ใน combatTargets แต่ type ไม่ใช่ Combat"
+					);
+				}
+
+				t.InitCombat();
+			}
+		}
+
+		spawnCoroutine = StartCoroutine(SpawnLoop());
+	}
 
 
 	// ==================================================
@@ -89,11 +101,9 @@ public class AnomalyManager : MonoBehaviour
 
 	private IEnumerator SpawnLoop()
 	{
-		// รอจนกว่าเกมจะเข้าสู่ Playing (รวมถึงช่วง Starting)
 		while (GameManager.Instance != null &&
 			   !GameManager.Instance.IsPlaying())
 		{
-			// ถ้าเกมจบไปแล้วก่อนเริ่ม ก็ไม่ต้อง spawn
 			if (GameManager.Instance.IsGameOver() ||
 				GameManager.Instance.IsWin())
 				yield break;
@@ -101,19 +111,16 @@ public class AnomalyManager : MonoBehaviour
 			yield return null;
 		}
 
-		// เริ่มนับ delay หลังเกมเริ่มจริง
 		yield return new WaitForSeconds(delayBeforeFirstSpawn);
 
 		while (true)
 		{
 			if (GameManager.Instance != null)
 			{
-				// จบเกมแล้ว หยุดถาวร
 				if (GameManager.Instance.IsGameOver() ||
 					GameManager.Instance.IsWin())
 					yield break;
 
-				// Pause ชั่วคราว: รอจนกลับมา Playing
 				if (!GameManager.Instance.IsPlaying())
 				{
 					yield return null;
@@ -121,172 +128,181 @@ public class AnomalyManager : MonoBehaviour
 				}
 			}
 
-			CleanupDestroyedAnomalies();
+			SpawnRandomAnomaly();
 
-			if (activeAnomalies.Count < maxActiveAnomalies)
-				SpawnRandomAnomaly();
-
-			float randomWaitTime =
-				Random.Range(minSpawnInterval, maxSpawnInterval);
-
-			yield return new WaitForSeconds(randomWaitTime);
+			yield return new WaitForSeconds(
+				Random.Range(minSpawnInterval, maxSpawnInterval)
+			);
 		}
 	}
 
 
 	// ==================================================
-	// SPAWN RANDOM ANOMALY
+	// SPAWN
 	// ==================================================
 
 	private void SpawnRandomAnomaly()
-    {
-        // ==========================================
-        // ตรวจสอบเกม
-        // ==========================================
+	{
+		if (GameManager.Instance != null &&
+			!GameManager.Instance.IsPlaying())
+			return;
 
-        if (GameManager.Instance != null &&
-            !GameManager.Instance.IsPlaying())
-        {
-            return;
-        }
+		// Combat ที่ยังว่าง (ยังเป็นปกติอยู่)
+		List<AnomalyTarget> freeCombat = new List<AnomalyTarget>();
 
+		if (combatTargets != null)
+		{
+			foreach (AnomalyTarget t in combatTargets)
+			{
+				if (t != null && !t.IsActive)
+					freeCombat.Add(t);
+			}
+		}
 
-        // ==========================================
-        // ตรวจสอบ Prefab
-        // ==========================================
+		// จุดเกิดที่ยังว่าง
+		List<Transform> freePoints = new List<Transform>();
 
-        if (anomalyPrefabs == null ||
-            anomalyPrefabs.Length == 0)
-        {
-            Debug.LogWarning(
-                "AnomalyManager ไม่มี Anomaly Prefab!"
-            );
+		if (spawnPoints != null)
+		{
+			foreach (Transform p in spawnPoints)
+			{
+				if (p != null && !occupiedPoints.Contains(p))
+					freePoints.Add(p);
+			}
+		}
 
-            return;
-        }
+		bool canCombat = freeCombat.Count > 0;
 
+		bool canPrefab =
+			freePoints.Count > 0 &&
+			anomalyPrefabs != null &&
+			anomalyPrefabs.Length > 0;
 
-        // ==========================================
-        // ตรวจสอบ Spawn Point
-        // ==========================================
+		if (!canCombat && !canPrefab)
+			return; // ไม่มีที่ว่างแล้ว
 
-        if (spawnPoints == null ||
-            spawnPoints.Length == 0)
-        {
-            Debug.LogWarning(
-                "AnomalyManager ไม่มี Spawn Point!"
-            );
+		bool spawnCombat =
+			canCombat &&
+			(!canPrefab || Random.value < combatChance);
 
-            return;
-        }
+		AnomalyTarget target;
 
+		if (spawnCombat)
+		{
+			target = freeCombat[Random.Range(0, freeCombat.Count)];
+			target.Activate(this, null);
 
-        // ==========================================
-        // CLEANUP
-        // ==========================================
+			Debug.Log("ANOMALY SPAWNED → Combat | " + target.name);
+		}
+		else
+		{
+			Transform point = freePoints[Random.Range(0, freePoints.Count)];
+			GameObject prefab =
+				anomalyPrefabs[Random.Range(0, anomalyPrefabs.Length)];
 
-        CleanupDestroyedAnomalies();
+			if (prefab == null)
+				return;
 
+			GameObject go =
+				Instantiate(prefab, point.position, point.rotation);
 
-        // ==========================================
-        // CHECK LIMIT
-        // ==========================================
+			target = go.GetComponent<AnomalyTarget>();
 
-        if (activeAnomalies.Count >= maxActiveAnomalies)
-        {
-            return;
-        }
+			if (target == null)
+				target = go.GetComponentInChildren<AnomalyTarget>();
 
+			if (target == null || target.type == AnomalyType.Combat)
+			{
+				Debug.LogWarning(
+					"[AnomalyManager] Prefab " + prefab.name +
+					" ต้องมี AnomalyTarget และ type ต้องไม่ใช่ Combat"
+				);
 
-        // ==========================================
-        // RANDOM PREFAB
-        // ==========================================
+				Destroy(go);
+				return;
+			}
 
-        int randomPrefabIndex =
-            Random.Range(
-                0,
-                anomalyPrefabs.Length
-            );
+			occupiedPoints.Add(point);
+			target.Activate(this, point);
 
+			Debug.Log(
+				"ANOMALY SPAWNED → " + target.type + " | " +
+				prefab.name + " @ " + point.name
+			);
+		}
 
-        // ==========================================
-        // RANDOM SPAWN POINT
-        // ==========================================
+		activeAnomalies.Add(target);
 
-        int randomSpawnIndex =
-            Random.Range(
-                0,
-                spawnPoints.Length
-            );
-
-
-        // ==========================================
-        // SPAWN
-        // ==========================================
-
-        GameObject newAnomaly =
-            Instantiate(
-                anomalyPrefabs[randomPrefabIndex],
-                spawnPoints[randomSpawnIndex].position,
-                spawnPoints[randomSpawnIndex].rotation
-            );
-
-
-        // ==========================================
-        // ADD TO ACTIVE LIST
-        // ==========================================
-
-        activeAnomalies.Add(newAnomaly);
+		if (counterSystem != null)
+			counterSystem.AnomalySpawned();
+	}
 
 
-        // ==========================================
-        // ANOMALY COUNTER
-        // ==========================================
+	// ==================================================
+	// RESOLVED (เรียกจาก AnomalyTarget)
+	// ==================================================
 
-        if (counterSystem != null)
-        {
-            counterSystem.AnomalySpawned();
-        }
+	public void OnAnomalyResolved(
+		AnomalyTarget target,
+		AnomalyResolveReason reason)
+	{
+		activeAnomalies.Remove(target);
 
+		if (target.SpawnPoint != null)
+			occupiedPoints.Remove(target.SpawnPoint);
 
-        // ==========================================
-        // DEBUG
-        // ==========================================
+		if (counterSystem != null)
+		{
+			bool defeated =
+				reason == AnomalyResolveReason.Killed ||
+				reason == AnomalyResolveReason.Cured;
 
-        Debug.Log(
-            "ANOMALY SPAWNED → " +
-            anomalyPrefabs[randomPrefabIndex].name +
-            " | Spawn Point: " +
-            spawnPoints[randomSpawnIndex].name +
-            " | Active: " +
-            activeAnomalies.Count +
-            "/" +
-            maxActiveAnomalies
-        );
-    }
+			counterSystem.AnomalyRemoved(defeated);
+		}
 
+		// Combat เป็น Object ในฉาก แค่สลับกลับเป็นปกติ ไม่ลบ
+		if (target.type != AnomalyType.Combat)
+			Destroy(target.gameObject);
 
-    // ==================================================
-    // CLEANUP DESTROYED ANOMALIES
-    // ==================================================
-
-    private void CleanupDestroyedAnomalies()
-    {
-        activeAnomalies.RemoveAll(
-            anomaly => anomaly == null
-        );
-    }
+		Debug.Log(
+			"ANOMALY RESOLVED → " + target.type + " (" + reason + ")"
+		);
+	}
 
 
-    // ==================================================
-    // STOP COROUTINE
-    // ==================================================
+	// ==================================================
+	// DISTURB PENALTY: สุ่มอย่างใดอย่างหนึ่ง
+	// ==================================================
 
-    private void OnDestroy()
-    {
-        if (spawnCoroutine != null)
-        {
-            StopCoroutine(spawnCoroutine);
-        }
-    }
+	public void ApplyDisturbPenalty()
+	{
+		CCTVManager cctv = CCTVManager.Instance;
+
+		if (cctv == null)
+			return;
+
+		// 50% กล้องเปื้อน (ถ้าเปื้อนครบทุกตัวแล้ว จะเปลี่ยนไปหักกระสุนแทน)
+		if (Random.value < 0.5f && cctv.MakeRandomCameraDirty())
+		{
+			Debug.Log("DISTURB PENALTY → กล้องเปื้อน");
+			return;
+		}
+
+		if (cctv.cameraWeapon != null)
+		{
+			cctv.cameraWeapon.ReduceAmmo(
+				cctv.GetCurrentCameraIndex(),
+				disturbAmmoPenalty
+			);
+
+			Debug.Log("DISTURB PENALTY → หักกระสุน " + disturbAmmoPenalty);
+		}
+	}
+
+
+	private void OnDestroy()
+	{
+		if (spawnCoroutine != null)
+			StopCoroutine(spawnCoroutine);
+	}
 }

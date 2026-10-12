@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 8133670813297462466}
   - component: {fileID: 8818862194663870838}
   - component: {fileID: 6975915290557892088}
-  - component: {fileID: 4739877495718379607}
   m_Layer: 0
   m_Name: "1_CombatAnamolyTest(\u0E22\u0E34\u0E07\u0E44\u0E14\u0E49)"
   m_TagString: Untagged
@@ -164,23 +163,6 @@ MonoBehaviour:
   minAmmoDrop: 5
   maxAmmoDrop: 10
   counterSystem: {fileID: 0}
---- !u!114 &4739877495718379607
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1034217159886773283}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 70f8326a69632ee46833c485d4e75736, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AnomalyWander
-  walkSpeed: 1.5
-  waitAtPoint: 1
-  walkPoints:
-  - {fileID: 4356949132367821511}
-  - {fileID: 3772634071859674685}
 --- !u!1 &3464024958737377063
 GameObject:
   m_ObjectHideFlags: 0
