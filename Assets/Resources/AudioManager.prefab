@@ -2209,6 +2209,8 @@ MonoBehaviour:
     musicId: Cam Find Shot
   - sceneName: CodeTest
     musicId: Gallery
+  - sceneName: MainMap
+    musicId: Gallery
   mainMixer: {fileID: 24100000, guid: c701af65c01552641a59b9dde38b3aeb, type: 2}
   musicGroup: {fileID: 7135946093321715254, guid: c701af65c01552641a59b9dde38b3aeb, type: 2}
   sfxGroup: {fileID: 2952123916749510305, guid: c701af65c01552641a59b9dde38b3aeb, type: 2}
