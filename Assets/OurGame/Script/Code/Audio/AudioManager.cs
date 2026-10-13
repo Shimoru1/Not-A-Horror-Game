@@ -319,9 +319,7 @@ public class AudioManager : MonoBehaviour
 
 		if (sound == null)
 		{
-			Debug.LogError(
-				$"[AudioManager] ไม่พบ Music ID '{id}' ใน musicList"
-			);
+			Debug.LogError($"[AudioManager] ไม่พบ Music ID '{id}' ใน musicList");
 			StopMusic();
 			return;
 		}
@@ -384,6 +382,18 @@ public class AudioManager : MonoBehaviour
 		}
 
 		currentMusicId = null;
+	}
+
+	public void PauseMusic()
+	{
+		if (musicAudioSource != null && musicAudioSource.isPlaying)
+			musicAudioSource.Pause();
+	}
+
+	public void ResumeMusic()
+	{
+		if (musicAudioSource != null && musicAudioSource.clip != null)
+			musicAudioSource.UnPause();
 	}
 
 	public void PlaySFX(string id)

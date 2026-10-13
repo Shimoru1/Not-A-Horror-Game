@@ -15,6 +15,9 @@ public class GameManager : MonoBehaviour
 	[SerializeField] private TextMeshProUGUI waitingText;
 	[SerializeField] private TextMeshProUGUI gameStartedText;
 
+	[Header("GAMEPLAY MUSIC")]
+	[SerializeField] private string gameplayMusicId = "Night Ambient";
+
 	[SerializeField] private string messageSoundId = "TaskSound";
 	[SerializeField] private float messageDelay = 1f;
 
@@ -248,6 +251,7 @@ public class GameManager : MonoBehaviour
 		ShowStartMessage(gameStartedText, true);
 
 		StartGameImmediately();
+		StartGameplayMusic();
 	}
 
 	// =========================================================
@@ -289,18 +293,14 @@ public class GameManager : MonoBehaviour
 
 	private void PlayEndSound(string sfxId)
 	{
-		if (musicSource != null)
-			musicSource.Stop();
-
 		if (AudioManager.Instance != null)
 		{
+			AudioManager.Instance.StopMusic();
 			AudioManager.Instance.PlaySFX(sfxId);
 		}
 		else
 		{
-			Debug.LogWarning(
-				"[GameManager] AudioManager.Instance is NULL!"
-			);
+			Debug.LogWarning("[GameManager] AudioManager.Instance is NULL!");
 		}
 	}
 
@@ -336,7 +336,12 @@ public class GameManager : MonoBehaviour
 		currentState = stateBeforePause;
 
 		Time.timeScale = 1f;
-		if (musicSource != null) musicSource.UnPause();
+
+		bool powerOff = PowerManager.Instance != null &&
+						PowerManager.Instance.IsPowerOff;
+
+		if (musicSource != null && !powerOff)
+			musicSource.UnPause();
 
 		if (showDebugLog)
 			Debug.Log("GAME RESUMED (to " + currentState + ")");
@@ -565,6 +570,7 @@ public class GameManager : MonoBehaviour
 		yield return new WaitForSeconds(messageDelay);
 
 		ShowStartMessage(gameStartedText, true);
+		StartGameplayMusic();
 	}
 	public void SetStartTextVisible(bool visible)
 	{
@@ -615,5 +621,11 @@ public class GameManager : MonoBehaviour
 		}
 
 		desiredActive.Clear();
+	}
+
+	private void StartGameplayMusic()
+	{
+		if (AudioManager.Instance != null)
+			AudioManager.Instance.PlayMusic(gameplayMusicId);
 	}
 }

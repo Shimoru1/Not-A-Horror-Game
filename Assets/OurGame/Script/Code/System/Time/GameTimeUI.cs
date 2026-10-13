@@ -49,9 +49,6 @@ public class GameTimeUI : MonoBehaviour
 	{
 		int hour = Mathf.FloorToInt(time);
 
-		// ชั่วโมง 0 แสดงเป็น 12AM ที่เหลือแสดงตามเลขเดิม
-		int displayHour = hour == 0 ? 12 : hour;
-
-		return displayHour + " AM";
+		return hour + " AM";
 	}
 }

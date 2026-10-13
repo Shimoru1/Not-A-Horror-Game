@@ -51,11 +51,30 @@ public class AnomalyTarget : MonoBehaviour
 	private int maxHp = 1;
 	private float lifeTimer;
 	private float holdProgress;
+	private Collider[] cachedColliders;
 
 	public bool IsActive => isActive;
 	public Transform SpawnPoint => spawnPoint;
 	private bool UsesSwap =>
 	type == AnomalyType.Combat || type == AnomalyType.Interact;
+
+	private void Awake()
+	{
+		// เก็บ Collider ทั้งหมดของ Object นี้และลูก (รวมที่ปิดอยู่ เช่น anomalyState)
+		// ตัด Collider ของ promptUI ออก เผื่อมี
+		var all = GetComponentsInChildren<Collider>(true);
+		var list = new System.Collections.Generic.List<Collider>();
+
+		foreach (var c in all)
+		{
+			if (promptUI != null && c.transform.IsChildOf(promptUI.transform))
+				continue;
+
+			list.Add(c);
+		}
+
+		cachedColliders = list.ToArray();
+	}
 
 	// ==================================================
 	// INIT / ACTIVATE
@@ -140,7 +159,7 @@ public class AnomalyTarget : MonoBehaviour
 			player = p.transform;
 		}
 
-		float dist = Vector3.Distance(player.position, transform.position);
+		float dist = GetDistanceToTarget();
 		bool inRange = dist <= interactDistance;
 
 		SetPrompt(inRange);
@@ -246,5 +265,39 @@ public class AnomalyTarget : MonoBehaviour
 	{
 		if (promptUI != null && promptUI.activeSelf != show)
 			promptUI.SetActive(show);
+	}
+	private float GetDistanceToTarget()
+	{
+		Vector3 p = player.position;
+		float best = float.MaxValue;
+		bool found = false;
+
+		foreach (var col in cachedColliders)
+		{
+			// ใช้เฉพาะ Collider ที่ใช้งานอยู่ตอนนี้ (normalState / anomalyState ที่เปิดอยู่)
+			if (col == null || !col.enabled || !col.gameObject.activeInHierarchy)
+				continue;
+
+			Vector3 closest;
+
+			// MeshCollider ที่ไม่ Convex ใช้ ClosestPoint ไม่ได้ ให้ใช้ Bounds แทน
+			if (col is MeshCollider mc && !mc.convex)
+				closest = col.bounds.ClosestPoint(p);
+			else
+				closest = col.ClosestPoint(p);
+
+			float d = Vector3.Distance(p, closest);
+
+			if (d < best)
+				best = d;
+
+			found = true;
+		}
+
+		// ถ้าไม่มี Collider เลย ใช้วิธีเดิม
+		if (!found)
+			return Vector3.Distance(p, transform.position);
+
+		return best;
 	}
 }

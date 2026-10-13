@@ -176,6 +176,9 @@ public class PowerManager : MonoBehaviour
 
 		PlaySFX(PowerOffSFX);
 
+		if (AudioManager.Instance != null)
+			AudioManager.Instance.PauseMusic();
+
 		if (repairStation != null)
 		{
 			repairStation.SetActive(true);
@@ -334,6 +337,7 @@ public class PowerManager : MonoBehaviour
 		if (AudioManager.Instance != null)
 		{
 			AudioManager.Instance.PlaySFX("PowerOnSound");
+			AudioManager.Instance.ResumeMusic();
 		}
 		else
 		{

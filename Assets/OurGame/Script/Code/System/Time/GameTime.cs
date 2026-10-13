@@ -33,7 +33,6 @@ public class GameTime : MonoBehaviour
     [Tooltip("เวลาจบเกมตอน Test Mode หน่วยเป็นวินาที")]
     public float testDurationSeconds = 30f;
 
-
     private bool gameEnded = false;
 
 
@@ -107,7 +106,7 @@ public class GameTime : MonoBehaviour
 
     private void UpdateInspectorTime()
     {
-        currentGameTime = GetGameTime();
+        currentGameTime = GetGameTimeAM();
     }
 
 
@@ -121,7 +120,7 @@ public class GameTime : MonoBehaviour
 
 		Debug.Log("================================");
 		Debug.Log("YOU WIN!");
-		Debug.Log("Game Time Reached: " + GetGameTime());
+		Debug.Log("Game Time Reached: " + GetGameTimeAM());
 		Debug.Log("================================");
 
 		if (GameManager.Instance != null)
@@ -170,13 +169,21 @@ public class GameTime : MonoBehaviour
     {
         return currentTime;
     }
+	public string GetGameTimeAM()
+	{
+		int hour = Mathf.FloorToInt(currentTime);
+
+		int minute = Mathf.FloorToInt((currentTime - hour) * 60f);
+
+		return hour + ":" + minute.ToString("00") + " AM";
+	}
 
 
-    // ==========================================
-    // CHECK GAME ENDED
-    // ==========================================
+	// ==========================================
+	// CHECK GAME ENDED
+	// ==========================================
 
-    public bool IsGameEnded()
+	public bool IsGameEnded()
     {
         return gameEnded;
     }

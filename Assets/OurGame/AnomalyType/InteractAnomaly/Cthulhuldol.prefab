@@ -227,8 +227,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AnomalyTarget
   type: 1
   lifetime: 20
-  holdTime: 3
-  interactDistance: 2.5
+  holdTime: 2
+  interactDistance: 1
   progressFill: {fileID: 0}
   promptUI: {fileID: 0}
   normalState: {fileID: 1678120369894196626}
