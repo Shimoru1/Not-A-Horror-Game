@@ -27,11 +27,6 @@ public class DoorController : MonoBehaviour
 
 	void Update()
 	{
-		if (interactUI != null)
-		{
-			interactUI.SetActive(playerNearby);
-		}
-
 		if (playerNearby && Input.GetKeyDown(KeyCode.F))
 		{
 			isOpen = !isOpen;
@@ -53,6 +48,7 @@ public class DoorController : MonoBehaviour
 		if (other.CompareTag("Player"))
 		{
 			playerNearby = true;
+			if (interactUI != null) interactUI.SetActive(true);
 		}
 	}
 
@@ -61,6 +57,7 @@ public class DoorController : MonoBehaviour
 		if (other.CompareTag("Player"))
 		{
 			playerNearby = false;
+			if (interactUI != null) interactUI.SetActive(false);
 		}
 	}
 }
