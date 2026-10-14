@@ -15838,7 +15838,7 @@ MonoBehaviour:
   gameOverReason: 0
   gameStartDelay: 60
   warningTime: 5
-  isTest: 1
+  isTest: 0
   startText: {fileID: 827152016}
   startTextCanvasGroup: {fileID: 827152015}
   fadeInDuration: 0.5
