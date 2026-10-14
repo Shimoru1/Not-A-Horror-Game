@@ -2290,7 +2290,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnomalyTarget
   type: 2
-  lifetime: 30
+  lifetime: 50
   holdTime: 3
   interactDistance: 2.5
   progressFill: {fileID: 0}
