@@ -2889,6 +2889,7 @@ MonoBehaviour:
   - {fileID: 1428391303}
   - {fileID: 1113999164}
   - {fileID: 1773164818}
+  - {fileID: 2780866001496513522}
   combatChance: 0.8
   anomalyPrefabs:
   - {fileID: 1889659094976995228, guid: f5603ebcd0eceb14bb8bac6224196ac8, type: 3}
@@ -4262,7 +4263,7 @@ MonoBehaviour:
   currentTime: 0
   currentGameTime: 00:00
   testMode: 0
-  testDurationSeconds: 30
+  testDurationSeconds: 200
 --- !u!4 &510787165
 Transform:
   m_ObjectHideFlags: 0
@@ -15609,6 +15610,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 218267543}
+  - {fileID: 6796955606053442382}
   - {fileID: 718456196}
   - {fileID: 1828908178}
   - {fileID: 1383543311}
@@ -17718,6 +17720,63 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8938009845982752954, guid: abfb77e3542a6b14da4cf9ea49e78805, type: 3}
   m_PrefabInstance: {fileID: 180350540095052654}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1068210042396878529
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1876777615}
+    m_Modifications:
+    - target: {fileID: 1781656734754745320, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
+      propertyPath: m_Name
+      value: Girl Cat
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909586682823432568, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.06
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909586682823432568, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.61
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909586682823432568, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 8.996
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909586682823432568, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909586682823432568, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909586682823432568, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909586682823432568, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909586682823432568, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909586682823432568, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909586682823432568, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
 --- !u!1001 &2633963840158556799
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -17775,6 +17834,22 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5ff968da3bacf4642b7605a2268cac3c, type: 3}
+--- !u!114 &2780866001496513522 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4214103189368217162, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
+  m_PrefabInstance: {fileID: 1068210042396878529}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c0ac0af786291049b281d6d7bcaae57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnomalyTarget
+--- !u!4 &6796955606053442382 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4909586682823432568, guid: 5301c2cce49f8ba45bb839d2a06fbd57, type: 3}
+  m_PrefabInstance: {fileID: 1068210042396878529}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7420584401246357345
 PrefabInstance:
   m_ObjectHideFlags: 0
