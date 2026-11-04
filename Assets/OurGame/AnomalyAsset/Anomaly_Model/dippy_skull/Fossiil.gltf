@@ -1,0 +1,212 @@
+{
+  "accessors": [
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 65532,
+      "max": [
+        136.94508361816406,
+        274.37738037109375,
+        158.3267059326172
+      ],
+      "min": [
+        -135.9309539794922,
+        -345.6463928222656,
+        -158.3267059326172
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 786384,
+      "componentType": 5126,
+      "count": 65532,
+      "max": [
+        0.999973475933075,
+        0.9999731183052063,
+        0.9999688863754272
+      ],
+      "min": [
+        -0.9999988675117493,
+        -0.9999513626098633,
+        -0.9999876618385315
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 365847,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 1572768,
+      "componentType": 5126,
+      "count": 27988,
+      "max": [
+        136.66917419433594,
+        299.759521484375,
+        158.1420440673828
+      ],
+      "min": [
+        -133.60801696777344,
+        -187.09031677246094,
+        -157.75259399414063
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 1908624,
+      "componentType": 5126,
+      "count": 27988,
+      "max": [
+        0.9999867677688599,
+        0.9998859763145447,
+        0.9999688863754272
+      ],
+      "min": [
+        -0.9997846484184265,
+        -0.9998228549957275,
+        -0.9999663829803467
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 1463388,
+      "componentType": 5125,
+      "count": 124983,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "NHM_Imaging (https://sketchfab.com/NHM_Imaging)",
+      "license": "CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)",
+      "source": "https://sketchfab.com/3d-models/dippy-skull-f0372c208d174e83ab4b56512c6b2fd6",
+      "title": "Dippy skull"
+    },
+    "generator": "Sketchfab-13.31.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 1963320,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2244480,
+      "byteOffset": 1963320,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 4207800,
+      "uri": "scene.bin"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "Scene_-_Root",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.0221738848,
+          0.0069954102,
+          0.0012141079,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.44999999999999996
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Object_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0
+          },
+          "indices": 2,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Object_1",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 4,
+            "POSITION": 3
+          },
+          "indices": 5,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        0.0020905365236103535,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        4.641923564664093e-19,
+        -0.0020905365236103535,
+        0.0,
+        0.0,
+        0.0020905365236103535,
+        4.641923564664093e-19,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2,
+        3
+      ],
+      "name": "dippy_skull_decimated.obj.cleaner.materialmerger.gles"
+    },
+    {
+      "mesh": 0,
+      "name": "Object_2"
+    },
+    {
+      "mesh": 1,
+      "name": "Object_3"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}
