@@ -5,6 +5,14 @@ public class PowerManager : MonoBehaviour
 {
 	public static PowerManager Instance;
 
+	[Header("Tutorial")]
+	public bool autoDrain = true;
+	public void ForcePowerOff()
+	{
+		powerPercent = 0f;
+		PowerOff();
+	}
+
 	[Header("Power Settings")]
 	[Tooltip("เปอร์เซ็นต์ไฟเริ่มต้น")]
 	[Range(0f, 100f)]
@@ -130,7 +138,7 @@ public class PowerManager : MonoBehaviour
 
 		HandleRepair();
 
-		if (!isRepairing && !IsPowerOff)
+		if (!isRepairing && !IsPowerOff && autoDrain)
 		{
 			DrainPower();
 		}

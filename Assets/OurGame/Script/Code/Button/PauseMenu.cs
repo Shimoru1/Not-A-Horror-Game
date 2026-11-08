@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 public class PauseMenu : MonoBehaviour
 {
 	public static PauseMenu Instance;
+	public bool tutorialFreeze = false;
 
 	[Header("Pause UI")]
 	[SerializeField] private GameObject pausePanel;
@@ -104,32 +105,24 @@ public class PauseMenu : MonoBehaviour
 		if (GameManager.Instance == null)
 			return;
 
-		if (!GameManager.Instance.IsPlaying() &&
+		if (!tutorialFreeze &&
+			!GameManager.Instance.IsPlaying() &&
 			!GameManager.Instance.IsStarting())
 			return;
 
 		IsPaused = true;
 
-		GameManager.Instance.PauseGame();
+		// ตอน tutorial freeze เกมหยุดอยู่แล้ว ไม่ต้องหยุดซ้ำ
+		if (!tutorialFreeze)
+			GameManager.Instance.PauseGame();
 
-		// หยุดเสียงทั้งหมดระหว่าง Pause
 		AudioListener.pause = true;
 
-		if (pausePanel != null)
-			pausePanel.SetActive(true);
-
-		if (settingPanel != null)
-			settingPanel.SetActive(false);
+		if (pausePanel != null) pausePanel.SetActive(true);
+		if (settingPanel != null) settingPanel.SetActive(false);
 
 		UnlockMouse();
-
-		Debug.Log("PAUSE MENU OPEN");
 	}
-
-
-	// =========================================================
-	// CONTINUE
-	// =========================================================
 
 	public void ContinueGame()
 	{
@@ -137,36 +130,26 @@ public class PauseMenu : MonoBehaviour
 			return;
 
 		AudioListener.pause = false;
-
 		PlayButtonSound();
-
 		IsPaused = false;
 
-		if (GameManager.Instance != null)
+		// ตอน tutorial freeze ห้าม resume เกม ให้กลับไปที่กรอบเดิม
+		if (GameManager.Instance != null && !tutorialFreeze)
 			GameManager.Instance.ResumeGame();
 
-		if (pausePanel != null)
-			pausePanel.SetActive(false);
+		if (pausePanel != null) pausePanel.SetActive(false);
+		if (settingPanel != null) settingPanel.SetActive(false);
 
-		if (settingPanel != null)
-			settingPanel.SetActive(false);
-
-		LockMouse();
-		StartCoroutine(LockMouseNextFrame());
-
-		Debug.Log("GAME RESUMED");
+		if (tutorialFreeze)
+		{
+			UnlockMouse();
+		}
+		else
+		{
+			LockMouse();
+			StartCoroutine(LockMouseNextFrame());
+		}
 	}
-
-	private System.Collections.IEnumerator LockMouseNextFrame()
-	{
-		// รอให้ Esc ถูกประมวลผลเสร็จก่อน แล้วล็อกซ้ำ
-		yield return null;
-		LockMouse();
-
-		yield return null;
-		LockMouse();
-	}
-
 
 
 	// =========================================================
@@ -264,5 +247,14 @@ public class PauseMenu : MonoBehaviour
 	{
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
+	}
+	private System.Collections.IEnumerator LockMouseNextFrame()
+	{
+		// รอให้ Esc ถูกประมวลผลเสร็จก่อน แล้วล็อกซ้ำ
+		yield return null;
+		LockMouse();
+
+		yield return null;
+		LockMouse();
 	}
 }

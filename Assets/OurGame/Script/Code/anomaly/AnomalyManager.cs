@@ -5,8 +5,13 @@ using static AnomalyTarget;
 
 public class AnomalyManager : MonoBehaviour
 {
-	private readonly Dictionary<AnomalyTarget, GameObject> prefabOf =
-		new Dictionary<AnomalyTarget, GameObject>();
+	private readonly Dictionary<AnomalyTarget, GameObject> prefabOf = new Dictionary<AnomalyTarget, GameObject>();
+
+	[Header("Tutorial")]
+	public bool manualMode = false;
+	public int ActiveCount => activeAnomalies.Count;
+	public IReadOnlyList<AnomalyTarget> ActiveAnomalies => activeAnomalies;
+	public int DefeatedCount { get; private set; }
 
 	[Header("HP ของแต่ละประเภท")]
 	public int combatHealth = 20;
@@ -100,7 +105,8 @@ public class AnomalyManager : MonoBehaviour
 			}
 		}
 
-		spawnCoroutine = StartCoroutine(SpawnLoop());
+		if (!manualMode)
+			spawnCoroutine = StartCoroutine(SpawnLoop());
 	}
 
 	public int GetMaxHealth(AnomalyType type)
@@ -163,6 +169,7 @@ public class AnomalyManager : MonoBehaviour
 
 	private void SpawnRandomAnomaly()
 	{
+		if (manualMode) return;
 		if (GameManager.Instance != null &&
 			!GameManager.Instance.IsPlaying())
 			return;
@@ -284,11 +291,12 @@ public class AnomalyManager : MonoBehaviour
 
 		if (counterSystem != null)
 		{
-			bool defeated =
-				reason == AnomalyResolveReason.Killed ||
-				reason == AnomalyResolveReason.Cured;
+			bool defeated = reason == AnomalyResolveReason.Killed || reason == AnomalyResolveReason.Cured;
 
-			counterSystem.AnomalyRemoved(defeated);
+			if (defeated) DefeatedCount++;
+
+			if (counterSystem != null)
+				counterSystem.AnomalyRemoved(defeated);
 		}
 
 		// Combat เป็น Object ในฉาก แค่สลับกลับเป็นปกติ ไม่ลบ
@@ -335,5 +343,41 @@ public class AnomalyManager : MonoBehaviour
 	{
 		if (spawnCoroutine != null)
 			StopCoroutine(spawnCoroutine);
+	}
+
+	public bool SpawnCombatTarget(AnomalyTarget t)
+	{
+		if (t == null || t.IsActive) return false;
+
+		t.Activate(this, null);
+		activeAnomalies.Add(t);
+
+		if (counterSystem != null) counterSystem.AnomalySpawned();
+		return true;
+	}
+
+	public bool SpawnPrefabAt(GameObject prefab, Transform point)
+	{
+		if (prefab == null || point == null || occupiedPoints.Contains(point))
+			return false;
+
+		GameObject go = Instantiate(prefab, point.position, point.rotation);
+
+		AnomalyTarget target = go.GetComponent<AnomalyTarget>();
+		if (target == null) target = go.GetComponentInChildren<AnomalyTarget>();
+
+		if (target == null || target.type == AnomalyType.Combat || target.type == AnomalyType.Interact)
+		{
+			Destroy(go);
+			return false;
+		}
+
+		prefabOf[target] = prefab;
+		occupiedPoints.Add(point);
+		target.Activate(this, point);
+		activeAnomalies.Add(target);
+
+		if (counterSystem != null) counterSystem.AnomalySpawned();
+		return true;
 	}
 }

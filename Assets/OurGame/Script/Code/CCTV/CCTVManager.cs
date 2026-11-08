@@ -6,8 +6,9 @@ public class CCTVManager : MonoBehaviour
 {
     [Header("CCTV Settings")]
     public bool isWatchingCCTV = false;
+	public bool canEnterCCTV = true;
 
-    [Header("CCTV Cameras")]
+	[Header("CCTV Cameras")]
     public GameObject[] cctvCameras;
 
     [Header("Room Settings")]
@@ -23,6 +24,7 @@ public class CCTVManager : MonoBehaviour
 	[Header("Dirt System")]
 	public CCTVCleaningTarget[] cleaningTargets;
 	public CCTVDirtOverlay dirtOverlay;
+	public bool autoDirt = true;
 
 	[Header("Cleaning Settings")]
 	public KeyCode wipeKey = KeyCode.F;
@@ -116,7 +118,7 @@ public class CCTVManager : MonoBehaviour
 
 		if (!isWatchingCCTV)
 		{
-			bool nearComputer = IsNearComputer();
+			bool nearComputer = canEnterCCTV && IsNearComputer();
 
 			if (eToUseUI != null)
 				eToUseUI.SetActive(nearComputer);
@@ -136,8 +138,8 @@ public class CCTVManager : MonoBehaviour
             }
             else
             {
-                if (IsNearComputer())
-                {
+				if (canEnterCCTV && IsNearComputer())
+				{
                     Debug.Log(
                         "Press E near Computer -> Enter CCTV"
                     );
@@ -711,6 +713,7 @@ public class CCTVManager : MonoBehaviour
 	// สุ่มเปื้อนทุก dirtInterval วินาที (เปื้อนทันที ไม่ว่าจะดูกล้องอยู่หรือไม่)
 	private void UpdateRandomDirt()
 	{
+		if (!autoDirt) return;
 		dirtTimer += Time.deltaTime;
 
 		if (dirtTimer < dirtInterval)
@@ -770,6 +773,26 @@ public class CCTVManager : MonoBehaviour
 
 		Debug.Log("CAMERA DIRTY: " + picked.name);
 		return true;
+	}
+	public int MakeCurrentCameraDirty()
+	{
+		CCTVCleaningTarget t = GetCurrentTarget();
+		if (t == null || t.IsDirty()) return -1;
+
+		t.MakeDirty();
+
+		if (isWatchingCCTV && dirtOverlay != null)
+			dirtOverlay.SetCamera(t);
+
+		return currentCameraIndex;
+	}
+
+	public bool IsCameraDirty(int index)
+	{
+		if (cleaningTargets == null || index < 0 || index >= cleaningTargets.Length)
+			return false;
+
+		return cleaningTargets[index] != null && cleaningTargets[index].IsDirty();
 	}
 
 	// กด F รัวๆ เพื่อเช็ดกล้องที่กำลังดูอยู่

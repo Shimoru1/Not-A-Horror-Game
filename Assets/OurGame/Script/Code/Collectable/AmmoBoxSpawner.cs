@@ -3,6 +3,19 @@ using TMPro;
 
 public class AmmoBoxSpawner : MonoBehaviour
 {
+	[Header("Tutorial")]
+	public bool manualMode = false;
+	public GameObject ActiveBox => activeBox;
+
+	public void SpawnBoxAt(Transform point)
+	{
+		if (ammoBoxPrefab == null || point == null || activeBox != null) return;
+
+		activeBox = Instantiate(ammoBoxPrefab, point.position, point.rotation);
+		lifeTimer = boxLifetime;
+		PlaySpawnSound(point.position);
+	}
+
 	[Header("Spawn")]
 	public GameObject ammoBoxPrefab;
 	public Transform[] spawnPoints;
@@ -82,25 +95,26 @@ public class AmmoBoxSpawner : MonoBehaviour
 
 		if (activeBox == null)
 		{
-			// ไม่มีกล่อง -> นับถอยหลังสุ่มเกิด
 			SetPromptActive(false);
 
-			spawnTimer -= Time.deltaTime;
-
-			if (spawnTimer <= 0f)
-				SpawnBox();
-
+			if (!manualMode)
+			{
+				spawnTimer -= Time.deltaTime;
+				if (spawnTimer <= 0f) SpawnBox();
+			}
 			return;
 		}
 
-		// มีกล่องอยู่ -> ไม่นับเวลาเกิด นับเวลาหายแทน
-		lifeTimer -= Time.deltaTime;
-
-		if (lifeTimer <= 0f)
+		if (!manualMode)
 		{
-			Debug.Log("Ammo box expired");
-			RemoveBox();
-			return;
+			lifeTimer -= Time.deltaTime;
+
+			if (lifeTimer <= 0f)
+			{
+				Debug.Log("Ammo box expired");
+				RemoveBox();
+				return;
+			}
 		}
 
 		bool near = IsNearBox();

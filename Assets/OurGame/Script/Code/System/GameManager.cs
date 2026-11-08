@@ -7,6 +7,19 @@ public class GameManager : MonoBehaviour
 	public static GameManager Instance;
 	private GameState stateBeforePause = GameState.Playing;
 
+	[Header("TUTORIAL")]
+	[SerializeField] private bool tutorialMode = false;
+
+	[Header("SKIP EXPLORATION")]
+	[SerializeField] private KeyCode skipKey = KeyCode.Space;
+	[Tooltip("UI ข้อความ เช่น 'Press SPACE to skip' (ปิดไว้ตอนเริ่ม)")]
+	[SerializeField] private GameObject skipHintUI;
+	[SerializeField] private float skipHintDelay = 5f;
+
+	private Coroutine countdownRoutine;
+	private Coroutine fadeRoutine;
+	private Coroutine skipHintRoutine;
+
 	[Header("AUDIO")]
 	[SerializeField] private AudioSource musicSource;
 	[SerializeField] private AudioSource sfxSource;
@@ -98,10 +111,14 @@ public class GameManager : MonoBehaviour
 
 	private void Start()
 	{
-		Debug.Log(
-			$"[GameManager] Start | isTest={isTest}, " +
-			$"delay={gameStartDelay}, timeScale={Time.timeScale}"
-		);
+		if (skipHintUI != null) skipHintUI.SetActive(false);
+		if (tutorialMode)
+		{
+			StartGameImmediately();
+			StartGameplayMusic();
+			return;
+		}
+		Debug.Log($"[GameManager] Start | isTest={isTest}, " +$"delay={gameStartDelay}, timeScale={Time.timeScale}");
 
 		if (startText != null)
 			startText.gameObject.SetActive(false);
@@ -129,7 +146,62 @@ public class GameManager : MonoBehaviour
 
 		Debug.Log("[GameManager] Starting countdown coroutine");
 
-		StartCoroutine(GameStartCountdown());
+		countdownRoutine = StartCoroutine(GameStartCountdown());
+		skipHintRoutine = StartCoroutine(ShowSkipHintAfterDelay());
+	}
+
+	private void Update()
+	{
+		// ข้ามได้ทุกเมื่อระหว่างช่วงสำรวจ (ไม่ต้องรอให้ UI ขึ้น)
+		if (currentState == GameState.Starting && Input.GetKeyDown(skipKey))
+			SkipCountdown();
+	}
+
+	private void SkipCountdown()
+	{
+		if (currentState != GameState.Starting)
+			return;
+
+		if (countdownRoutine != null) { StopCoroutine(countdownRoutine); countdownRoutine = null; }
+		if (fadeRoutine != null) { StopCoroutine(fadeRoutine); fadeRoutine = null; }
+
+		HideSkipHint();
+
+		SetMessageActive(startText, false);
+
+		if (startTextCanvasGroup != null)
+			startTextCanvasGroup.alpha = 0f;
+
+		ShowStartMessage(gameStartedText, true);
+
+		StartGameImmediately();
+
+		if (AudioManager.Instance != null)
+			AudioManager.Instance.StopMusic();
+
+		StartGameplayMusic();
+
+		Debug.Log("[GameManager] Exploration skipped");
+	}
+
+	private System.Collections.IEnumerator ShowSkipHintAfterDelay()
+	{
+		yield return new WaitForSeconds(skipHintDelay);
+
+		if (currentState == GameState.Starting && skipHintUI != null)
+			skipHintUI.SetActive(true);
+	}
+
+	private void HideSkipHint()
+	{
+		if (skipHintRoutine != null)
+		{
+			StopCoroutine(skipHintRoutine);
+			skipHintRoutine = null;
+		}
+
+		if (skipHintUI != null)
+			skipHintUI.SetActive(false);
 	}
 
 	// =========================================================
@@ -206,7 +278,7 @@ public class GameManager : MonoBehaviour
 
 		if (AudioManager.Instance != null)
 		{
-			StartCoroutine(
+			fadeRoutine = StartCoroutine(
 				AudioManager.Instance.FadeOutMusic(warningTime)
 			);
 		}
@@ -250,6 +322,7 @@ public class GameManager : MonoBehaviour
 
 		ShowStartMessage(gameStartedText, true);
 
+		HideSkipHint();
 		StartGameImmediately();
 		StartGameplayMusic();
 	}
@@ -310,6 +383,7 @@ public class GameManager : MonoBehaviour
 
 	public void PauseGame()
 	{
+		PauseInternal(false);
 		// pause ได้ทั้งตอน Starting และ Playing
 		if (currentState != GameState.Playing &&
 			currentState != GameState.Starting)
@@ -322,6 +396,31 @@ public class GameManager : MonoBehaviour
 
 		UnlockMouse();
 		if (musicSource != null) musicSource.Pause();
+
+		if (showDebugLog)
+			Debug.Log("GAME PAUSED (from " + stateBeforePause + ")");
+	}
+	public void PauseGameKeepMusic()
+	{
+		PauseInternal(true);
+	}
+
+	private void PauseInternal(bool keepMusic)
+	{
+		// pause ได้ทั้งตอน Starting และ Playing
+		if (currentState != GameState.Playing &&
+			currentState != GameState.Starting)
+			return;
+
+		stateBeforePause = currentState;
+		currentState = GameState.Paused;
+
+		Time.timeScale = 0f;
+
+		UnlockMouse();
+
+		if (!keepMusic && musicSource != null)
+			musicSource.Pause();
 
 		if (showDebugLog)
 			Debug.Log("GAME PAUSED (from " + stateBeforePause + ")");

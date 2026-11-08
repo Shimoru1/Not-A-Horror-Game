@@ -2143,6 +2143,10 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 875249ea48bf22443866bfb213d09b97, type: 3}
     volume: 1
     loop: 1
+  - id: Tutorial
+    clip: {fileID: 8300000, guid: ce6d0bc1d5a240847a3dd0a4f9f0e40a, type: 3}
+    volume: 0.3
+    loop: 1
   sfxList:
   - id: ButtonSound1
     clip: {fileID: 8300000, guid: 5c14403393f67e049ac72d67313c8f81, type: 3}
@@ -2211,6 +2215,8 @@ MonoBehaviour:
     musicId: Gallery
   - sceneName: MainMap
     musicId: Gallery
+  - sceneName: Tutorial
+    musicId: Tutorial
   mainMixer: {fileID: 24100000, guid: c701af65c01552641a59b9dde38b3aeb, type: 2}
   musicGroup: {fileID: 7135946093321715254, guid: c701af65c01552641a59b9dde38b3aeb, type: 2}
   sfxGroup: {fileID: 2952123916749510305, guid: c701af65c01552641a59b9dde38b3aeb, type: 2}

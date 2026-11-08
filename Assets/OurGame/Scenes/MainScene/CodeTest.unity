@@ -1560,6 +1560,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 331696eaf64870b4883481cffb2f0d82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnomalyManager
+  manualMode: 0
   combatHealth: 25
   disturbHealth: 25
   protectHealth: 25
@@ -5077,6 +5078,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2d67ac20ae3c5648ad785b2624e9d19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PowerManager
+  autoDrain: 1
   powerPercent: 100
   powerDrainPerSecond: 1.25
   powerOffPercent: 0
@@ -8787,6 +8789,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c86889608e86d9b44910de7f85f57e86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PauseMenu
+  tutorialFreeze: 0
   pausePanel: {fileID: 1839013577}
   settingPanel: {fileID: 757664217}
   buttonClickAudio: {fileID: 0}
@@ -9779,6 +9782,143 @@ Light:
   m_CorrespondingSourceObject: {fileID: 7835244768891952089, guid: 2dbb1b2af7dac0a429ed3da5c8ab957c, type: 3}
   m_PrefabInstance: {fileID: 1867269709}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1639223544
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1639223545}
+  - component: {fileID: 1639223547}
+  - component: {fileID: 1639223546}
+  m_Layer: 5
+  m_Name: Space to Skip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &1639223545
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639223544}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1679262818}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -0.00012207031, y: -500}
+  m_SizeDelta: {x: 200, y: 50}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1639223546
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639223544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: Spacebar to Skip
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 36
+  m_fontSizeBase: 36
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_characterHorizontalScale: 1
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: -25.445251, y: 0, z: -50.979004, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &1639223547
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639223544}
+  m_CullTransparentMesh: 1
 --- !u!1 &1660891975
 GameObject:
   m_ObjectHideFlags: 0
@@ -10040,6 +10180,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1983614480}
+  - {fileID: 1639223545}
   - {fileID: 981292707}
   - {fileID: 1779143497}
   - {fileID: 1823046116}
@@ -10118,6 +10259,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CCTVManager
   isWatchingCCTV: 0
+  canEnterCCTV: 1
   cctvCameras:
   - {fileID: 2057590558}
   - {fileID: 833814079}
@@ -10158,6 +10300,7 @@ MonoBehaviour:
   - {fileID: 2140646873}
   - {fileID: 1163709357}
   dirtOverlay: {fileID: 761529401}
+  autoDirt: 1
   wipeKey: 102
   wipeAmount: 0.2
   dirtInterval: 40
@@ -11227,6 +11370,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8593ac346b346b468e506d5b04f03ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  tutorialMode: 0
+  skipKey: 32
+  skipHintUI: {fileID: 1639223544}
+  skipHintDelay: 5
   musicSource: {fileID: 0}
   sfxSource: {fileID: 0}
   waitingText: {fileID: 1823046117}
@@ -13445,6 +13592,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82eafc61f43fb324ab2d0060d9e8eadc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AmmoBoxSpawner
+  manualMode: 0
   ammoBoxPrefab: {fileID: 7341279607321427307, guid: c50c2cad6c0132544b1748a33618abcb, type: 3}
   spawnPoints:
   - {fileID: 132156336}

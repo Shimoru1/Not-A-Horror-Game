@@ -39,6 +39,12 @@ public class PlayerLook : MonoBehaviour
 
 	private void Update()
 	{
+		
+		if (GameManager.Instance != null && !GameManager.Instance.IsPlaying() && !GameManager.Instance.IsStarting())
+		{
+			return;
+		}
+
 		// ==============================
 		// PAUSE
 		// ==============================

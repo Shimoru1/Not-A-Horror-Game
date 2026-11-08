@@ -60,6 +60,7 @@ public class WeaponController : MonoBehaviour
 	[Range(0f, 1f)] public float lowAmmoMaxAlpha = 0.6f;
 
 	private bool isLowAmmo = false;
+	public bool IsLowAmmo => isLowAmmo;
 	private float lowAmmoSoundTimer = 0f;
 
 	private bool isPaused = false;

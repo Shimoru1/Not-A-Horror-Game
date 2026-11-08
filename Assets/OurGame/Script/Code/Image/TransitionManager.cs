@@ -7,12 +7,16 @@ public class TransitionManager : MonoBehaviour
 {
 	public static TransitionManager Instance;
 
+	// true ระหว่างที่กำลังเล่นอนิเมชันปิด/เปิด (ใช้กันกดปุ่มหรือ ESC ซ้ำ)
+	public static bool IsBusy => Instance != null && Instance.isBusy;
+
 	[Header("Transition")]
 	[SerializeField] private Image circleTransition;
 
 	[SerializeField] private float duration = 0.7f;
 
 	private bool shouldOpen = false;
+	private bool isBusy = false;
 	private Canvas transitionCanvas;
 
 	private void Awake()
@@ -34,10 +38,10 @@ public class TransitionManager : MonoBehaviour
 			transitionCanvas.overrideSorting = true;
 			transitionCanvas.sortingOrder = 9999;
 		}
-	
+
 		circleTransition.transform.SetAsLastSibling();
 
-		SceneManager.sceneLoaded += OnSceneLoaded;	
+		SceneManager.sceneLoaded += OnSceneLoaded;
 	}
 
 	private void Start()
@@ -69,7 +73,7 @@ public class TransitionManager : MonoBehaviour
 		SceneManager.sceneLoaded -= OnSceneLoaded;
 	}
 
-	private void OnSceneLoaded(Scene scene,LoadSceneMode mode)
+	private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
 	{
 		if (shouldOpen)
 		{
@@ -79,14 +83,41 @@ public class TransitionManager : MonoBehaviour
 		}
 	}
 
+	// =========================================================
+	// ใช้ฟังก์ชันนี้แทน SceneManager.LoadScene ทุกที่
+	// ถ้าซีนนั้นไม่มี TransitionManager จะโหลดตรงๆ ให้
+	// =========================================================
+
+	public static void Load(string sceneName)
+	{
+		if (Instance != null)
+			Instance.StartLoadScene(sceneName);
+		else
+			SceneManager.LoadScene(sceneName);
+	}
+
 	public void StartLoadScene(string sceneName)
 	{
+		if (isBusy)
+			return;
+
+		if (!Application.CanStreamedLevelBeLoaded(sceneName))
+		{
+			Debug.LogError("[TransitionManager] Scene not in Build Settings: " + sceneName);
+			return;
+		}
+
 		StartCoroutine(LoadSceneProcess(sceneName));
 	}
 
 	private IEnumerator LoadSceneProcess(string sceneName)
 	{
+		isBusy = true;
+
 		circleTransition.gameObject.SetActive(true);
+
+		// บล็อกการคลิก UI ระหว่างเล่นอนิเมชัน
+		circleTransition.raycastTarget = true;
 
 		circleTransition.fillAmount = 0f;
 
@@ -94,7 +125,8 @@ public class TransitionManager : MonoBehaviour
 
 		while (timer < duration)
 		{
-			timer += Time.deltaTime;
+			// unscaled: ต้องเล่นได้แม้เกมถูก Pause / ชนะ / แพ้ (timeScale = 0)
+			timer += Time.unscaledDeltaTime;
 
 			float t = Mathf.Clamp01(timer / duration);
 
@@ -109,12 +141,17 @@ public class TransitionManager : MonoBehaviour
 
 		shouldOpen = true;
 
+		// ให้ซีนใหม่เริ่มแบบปกติ
+		Time.timeScale = 1f;
+		AudioListener.pause = false;
+
 		SceneManager.LoadScene(sceneName);
 	}
 
 	private IEnumerator OpenCircle()
 	{
 		circleTransition.gameObject.SetActive(true);
+		circleTransition.raycastTarget = true;
 
 		circleTransition.fillAmount = 1f;
 
@@ -122,7 +159,7 @@ public class TransitionManager : MonoBehaviour
 
 		while (timer < duration)
 		{
-			timer += Time.deltaTime;
+			timer += Time.unscaledDeltaTime;
 
 			float t = Mathf.Clamp01(timer / duration);
 
@@ -136,7 +173,10 @@ public class TransitionManager : MonoBehaviour
 		}
 
 		circleTransition.fillAmount = 0f;
+		circleTransition.raycastTarget = false;
 
 		circleTransition.gameObject.SetActive(false);
+
+		isBusy = false;
 	}
 }
