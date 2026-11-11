@@ -366,7 +366,7 @@ public class TutorialManager : MonoBehaviour
 				lastShown = shown;
 
 				if (clearAll)
-					SetHint("Destroy all remaining anomalies on the map. (" + shown + " left)", first);
+					SetHint("Destroy anomalies (" + shown + " left)", first);
 				else
 					SetHint("Destroy " + shown + " more anomalies.", first);
 			}

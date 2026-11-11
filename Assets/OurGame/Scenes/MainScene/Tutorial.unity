@@ -2594,6 +2594,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 306546deeb0eb1346b772bb6133b5cd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TutorialManager
+  playerMovement: {fileID: 0}
   anomalyManager: {fileID: 250029317}
   ammoBoxSpawner: {fileID: 1994942347}
   weapon: {fileID: 1547771252}
