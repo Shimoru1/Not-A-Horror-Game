@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7264697862338761334
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3423414406785676339}
+  m_Layer: 0
+  m_Name: Meow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3423414406785676339
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7264697862338761334}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -56.14911, y: 0, z: 14.48837}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 220195925355019877}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &7694762799238547845
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 3423414406785676339}
+    m_Modifications:
+    - target: {fileID: -1601307877119150112, guid: 7f7eca1966ed8944d870207d18e5a116, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.3791084
+      objectReference: {fileID: 0}
+    - target: {fileID: -1601307877119150112, guid: 7f7eca1966ed8944d870207d18e5a116, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.639
+      objectReference: {fileID: 0}
+    - target: {fileID: -1601307877119150112, guid: 7f7eca1966ed8944d870207d18e5a116, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -1.0483704
+      objectReference: {fileID: 0}
+    - target: {fileID: -1601307877119150112, guid: 7f7eca1966ed8944d870207d18e5a116, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.62154645
+      objectReference: {fileID: 0}
+    - target: {fileID: -1601307877119150112, guid: 7f7eca1966ed8944d870207d18e5a116, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1601307877119150112, guid: 7f7eca1966ed8944d870207d18e5a116, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.78337735
+      objectReference: {fileID: 0}
+    - target: {fileID: -1601307877119150112, guid: 7f7eca1966ed8944d870207d18e5a116, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1601307877119150112, guid: 7f7eca1966ed8944d870207d18e5a116, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1601307877119150112, guid: 7f7eca1966ed8944d870207d18e5a116, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 103.142
+      objectReference: {fileID: 0}
+    - target: {fileID: -1601307877119150112, guid: 7f7eca1966ed8944d870207d18e5a116, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1276814939802634743, guid: 7f7eca1966ed8944d870207d18e5a116, type: 3}
+      propertyPath: m_Name
+      value: Meow
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 3150474306388093854, guid: 7f7eca1966ed8944d870207d18e5a116, type: 3}
+--- !u!4 &220195925355019877 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -1601307877119150112, guid: 7f7eca1966ed8944d870207d18e5a116, type: 3}
+  m_PrefabInstance: {fileID: 7694762799238547845}
+  m_PrefabAsset: {fileID: 0}
